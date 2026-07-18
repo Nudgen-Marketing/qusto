@@ -16,6 +16,8 @@ describe("project API keys", () => {
   });
 
   it("rejects malformed keys", () => {
-    expect(() => parseAndHashApiKey("qsk_invalid")).toThrow("Invalid Qusto API key");
+    expect(() => parseAndHashApiKey("qsk_invalid")).toThrow(
+      "Invalid Qusto API key"
+    );
   });
 });

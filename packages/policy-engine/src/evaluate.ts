@@ -18,14 +18,25 @@ function normalizedValue(dimension: ListDimension, value: string): string {
   return addressDimensions.has(dimension) ? value.toLowerCase() : value;
 }
 
-function paymentValue(payment: PaymentContext, dimension: ListDimension): string {
+function paymentValue(
+  payment: PaymentContext,
+  dimension: ListDimension
+): string {
   return payment[dimension] ?? "";
 }
 
-function matchesList(payment: PaymentContext, rule: Extract<PolicyRule, { kind: "allowlist" | "denylist" }>): boolean {
-  const value = normalizedValue(rule.dimension, paymentValue(payment, rule.dimension));
+function matchesList(
+  payment: PaymentContext,
+  rule: Extract<PolicyRule, { kind: "allowlist" | "denylist" }>
+): boolean {
+  const value = normalizedValue(
+    rule.dimension,
+    paymentValue(payment, rule.dimension)
+  );
 
-  return rule.values.some((candidate) => normalizedValue(rule.dimension, candidate) === value);
+  return rule.values.some(
+    (candidate) => normalizedValue(rule.dimension, candidate) === value
+  );
 }
 
 function rejectionForRule(
@@ -77,7 +88,8 @@ export function evaluatePolicies(
   const denylistRejections = rejections.filter(
     ({ reasonCode }) => reasonCode === "DENYLIST_MATCH"
   );
-  const decisiveRejections = denylistRejections.length > 0 ? denylistRejections : rejections;
+  const decisiveRejections =
+    denylistRejections.length > 0 ? denylistRejections : rejections;
 
   if (decisiveRejections.length === 0) {
     return { outcome: "allow", reasonCodes: [] };

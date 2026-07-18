@@ -51,8 +51,12 @@ describe("evaluatePayment", () => {
     const repository = new MemoryEvaluationRepository();
     const rules: PolicyRule[] = [];
 
-    const first = await evaluatePayment(input, rules, repository, { now: () => new Date(0) });
-    const second = await evaluatePayment(input, rules, repository, { now: () => new Date(1000) });
+    const first = await evaluatePayment(input, rules, repository, {
+      now: () => new Date(0)
+    });
+    const second = await evaluatePayment(input, rules, repository, {
+      now: () => new Date(1000)
+    });
 
     expect(second).toEqual(first);
     expect(repository.decisions).toHaveLength(1);
@@ -70,7 +74,9 @@ describe("evaluatePayment", () => {
       }
     ];
 
-    const result = await evaluatePayment(input, rules, repository, { now: () => new Date(0) });
+    const result = await evaluatePayment(input, rules, repository, {
+      now: () => new Date(0)
+    });
 
     expect(result.outcome).toBe("allow");
     expect(result.reservationId).toMatch(/^res_/);

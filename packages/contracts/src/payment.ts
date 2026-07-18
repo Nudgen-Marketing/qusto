@@ -57,20 +57,31 @@ export interface CanonicalPaymentRequired {
   readonly resourceUrl: string;
 }
 
-export function normalizePaymentRequired(input: unknown): CanonicalPaymentRequired {
-  const version = z.object({ x402Version: z.union([z.literal(1), z.literal(2)]) }).parse(input)
-    .x402Version;
+export function normalizePaymentRequired(
+  input: unknown
+): CanonicalPaymentRequired {
+  const version = z
+    .object({ x402Version: z.union([z.literal(1), z.literal(2)]) })
+    .parse(input).x402Version;
 
   if (version === 1) {
     const parsed = v1PaymentRequiredSchema.parse(input);
+    const firstRequirement = parsed.accepts.at(0);
+    if (firstRequirement === undefined) {
+      throw new Error("At least one payment requirement is required");
+    }
 
     return {
       protocolVersion: 1,
-      requirements: parsed.accepts.map(({ maxAmountRequired, resource: _resource, ...item }) => ({
-        amountAtomic: maxAmountRequired,
-        ...item
+      requirements: parsed.accepts.map((item) => ({
+        amountAtomic: item.maxAmountRequired,
+        asset: item.asset,
+        maxTimeoutSeconds: item.maxTimeoutSeconds,
+        network: item.network,
+        payTo: item.payTo,
+        scheme: item.scheme
       })),
-      resourceUrl: parsed.accepts[0]!.resource
+      resourceUrl: firstRequirement.resource
     };
   }
 

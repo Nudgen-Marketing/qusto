@@ -107,7 +107,11 @@ describe("public API contracts", () => {
       type: "payment.required"
     };
 
-    expect(() => eventBatchSchema.parse({ events: Array.from({ length: 101 }, () => event) })).toThrow();
+    expect(() =>
+      eventBatchSchema.parse({
+        events: Array.from({ length: 101 }, () => event)
+      })
+    ).toThrow();
     expect(() =>
       policyEvaluationRequestSchema.parse({
         amountAtomic: "1",

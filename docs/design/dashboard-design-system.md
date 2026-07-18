@@ -12,19 +12,19 @@
 
 ## Tokens
 
-| Role | Value |
-| --- | --- |
-| Canvas | `#020d1d` |
-| Sidebar | `#061426` |
-| Surface | `#07182b` |
+| Role           | Value     |
+| -------------- | --------- |
+| Canvas         | `#020d1d` |
+| Sidebar        | `#061426` |
+| Surface        | `#07182b` |
 | Raised surface | `#0a1d33` |
-| Border | `#1c3149` |
-| Text | `#f7f9fc` |
-| Muted text | `#8ea0b7` |
-| Accent | `#1473ff` |
-| Success | `#2ed477` |
-| Warning | `#f6b91f` |
-| Danger | `#ff4d55` |
+| Border         | `#1c3149` |
+| Text           | `#f7f9fc` |
+| Muted text     | `#8ea0b7` |
+| Accent         | `#1473ff` |
+| Success        | `#2ed477` |
+| Warning        | `#f6b91f` |
+| Danger         | `#ff4d55` |
 
 Spacing follows a 4 px base scale. Typography ranges from 12 px table metadata to 26 px page titles. UI controls use 13–14 px text with explicit line heights.
 

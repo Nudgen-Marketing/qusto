@@ -28,12 +28,7 @@ export interface RollingLimitRule extends RuleBase {
 }
 
 export type ListDimension =
-  | "asset"
-  | "network"
-  | "payer"
-  | "payee"
-  | "resourceUrl"
-  | "tool";
+  "asset" | "network" | "payer" | "payee" | "resourceUrl" | "tool";
 
 export interface ListRule extends RuleBase {
   readonly dimension: ListDimension;
