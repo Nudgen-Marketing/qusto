@@ -106,10 +106,15 @@ describe("PostgreSQL control-plane repositories", () => {
     const [environment] = await sql<{ active_policy_version_id: string }[]>`
       SELECT active_policy_version_id FROM environments WHERE id = ${environmentId}
     `;
+    const [storedDraft] = await sql<{ rules_type: string }[]>`
+      SELECT jsonb_typeof(rules) AS rules_type
+      FROM policy_versions WHERE id = ${draft.id}
+    `;
     const audits = await sql<{ action: string; organization_id: string }[]>`
       SELECT action, organization_id FROM audit_entries ORDER BY occurred_at
     `;
     expect(environment?.active_policy_version_id).toBe(published.id);
+    expect(storedDraft?.rules_type).toBe("array");
     expect(audits).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
