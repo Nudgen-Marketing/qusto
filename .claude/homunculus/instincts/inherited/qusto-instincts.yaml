@@ -1,0 +1,712 @@
+# Instincts generated from https://github.com/Nudgen-Marketing/qusto
+# Generated: 2026-07-18T06:33:24.418Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: qusto-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: feat, test
+
+## Evidence
+
+- 14 commits analyzed
+- Detected conventional commit pattern
+- Examples: test: add RED contracts and policy engine specifications, feat: implement x402 normalization and policy evaluation
+
+---
+id: qusto-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Commit Length
+
+## Action
+
+Write moderate-length commit messages (~51 characters)
+
+## Evidence
+
+- Average commit message length: 51 chars
+- Based on 14 commits
+
+---
+id: qusto-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: qusto-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: qusto-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Export Style
+
+## Action
+
+Prefer mixed exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: mixed
+
+---
+id: qusto-arch-type-based
+trigger: "when adding new code"
+confidence: 0.8
+domain: architecture
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Arch Type Based
+
+## Action
+
+Place code in the appropriate type folder (components/, services/, utils/, etc.)
+
+## Evidence
+
+- Type-based module organization detected
+- Folders: 
+
+---
+id: qusto-test-framework
+trigger: "when writing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Test Framework
+
+## Action
+
+Use vitest as the test framework
+
+## Evidence
+
+- Test framework detected: vitest
+- File pattern: *.test.ts
+
+---
+id: qusto-test-naming
+trigger: "when creating a test file"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Test Naming
+
+## Action
+
+Name test files using the pattern: *.test.ts
+
+## Evidence
+
+- File pattern: *.test.ts
+- Consistent across test files
+
+---
+id: qusto-test-types
+trigger: "when planning tests for a feature"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Test Types
+
+## Action
+
+Write unit, integration, e2e tests to match project standards
+
+## Evidence
+
+- Test types detected: unit, integration, e2e
+- Coverage config: yes
+
+---
+id: qusto-workflow-database-migration
+trigger: "when modifying the database schema or adding tables"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Database Migration
+
+## Action
+
+Follow the database-migration workflow:
+1. Create migration file
+2. Update schema definitions
+3. Generate/update types
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~9x per month
+- Files: migrations/*, **/schema.*
+
+---
+id: qusto-workflow-feature-development
+trigger: "when implementing a new feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Feature Development
+
+## Action
+
+Follow the feature-development workflow:
+1. Add feature implementation
+2. Add tests for feature
+3. Update documentation
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~24x per month
+- Files: packages/contracts/test/*, packages/policy-engine/test/*, /*
+
+---
+id: qusto-workflow-feature-implementation-with-tests
+trigger: "when doing feature implementation with tests"
+confidence: 0.8
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Feature Implementation With Tests
+
+## Action
+
+Follow the feature-implementation-with-tests workflow:
+1. Create or update implementation files in src/ (e.g., src/feature.ts)
+2. Create or update corresponding test files in test/ (e.g., test/feature.test.ts)
+3. Update package.json or tsconfig if needed
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~6x per month
+- Files: packages/*/src/*.ts, packages/*/test/*.test.ts, apps/*/src/*.ts
+
+---
+id: qusto-workflow-database-schema-and-repository-expansion
+trigger: "when doing database schema and repository expansion"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Database Schema And Repository Expansion
+
+## Action
+
+Follow the database-schema-and-repository-expansion workflow:
+1. Create or update migration SQL files in migrations/
+2. Add or update repository files in src/ (e.g., src/new-repository.ts)
+3. Update schema.ts or related index.ts files
+4. Add or update test files for repositories
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: packages/database/migrations/*.sql, packages/database/src/*repository.ts, packages/database/src/schema.ts
+
+---
+id: qusto-workflow-api-endpoint-addition-with-tests
+trigger: "when doing api endpoint addition with tests"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Api Endpoint Addition With Tests
+
+## Action
+
+Follow the api-endpoint-addition-with-tests workflow:
+1. Create new route handler files (e.g., route.ts) in the appropriate API directory
+2. Update or create server logic files as needed
+3. Add or update test files for the new endpoints
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: apps/web/src/app/api/**/*.ts, apps/web/src/server/*.ts, apps/web/test/*.test.ts
+
+---
+id: qusto-workflow-dashboard-feature-development
+trigger: "when doing dashboard feature development"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Dashboard Feature Development
+
+## Action
+
+Follow the dashboard-feature-development workflow:
+1. Create or update React components in src/components/dashboard/
+2. Add or update server-side dashboard logic in src/server/
+3. Update or create test files for dashboard features
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: apps/web/src/components/dashboard/*.tsx, apps/web/src/server/dashboard-*.ts, apps/web/test/dashboard*.test.tsx
+
+---
+id: qusto-workflow-test-specification-and-expansion
+trigger: "when doing test specification and expansion"
+confidence: 0.75
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Test Specification And Expansion
+
+## Action
+
+Follow the test-specification-and-expansion workflow:
+1. Create or update test files in test/ directories for relevant packages
+2. Update test helpers or fixtures as needed
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~5x per month
+- Files: packages/*/test/*.test.ts, apps/*/test/*.test.ts, packages/*/test/helpers.ts
+
+---
+id: qusto-naming-files-camelCase
+trigger: "When creating a new file"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Naming Files CamelCase
+
+## Action
+
+Name the file using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.files
+- Consistent file naming in packages/apps
+
+---
+id: qusto-naming-functions-camelCase
+trigger: "When defining a function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Naming Functions CamelCase
+
+## Action
+
+Name the function using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.functions
+
+---
+id: qusto-naming-classes-PascalCase
+trigger: "When defining a class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Naming Classes PascalCase
+
+## Action
+
+Name the class using PascalCase
+
+## Evidence
+
+- Pattern in namingConventions.classes
+
+---
+id: qusto-naming-constants-SCREAMING_SNAKE_CASE
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Naming Constants SCREAMING_SNAKE_CASE
+
+## Action
+
+Name the constant using SCREAMING_SNAKE_CASE
+
+## Evidence
+
+- Pattern in namingConventions.constants
+
+---
+id: qusto-imports-relative
+trigger: "When importing modules"
+confidence: 0.85
+domain: code-style
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Imports Relative
+
+## Action
+
+Use relative import paths
+
+## Evidence
+
+- Pattern in importStyle: relative
+- Observed in source files
+
+---
+id: qusto-exports-mixed
+trigger: "When exporting modules or functions"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Exports Mixed
+
+## Action
+
+Use both default and named exports as appropriate
+
+## Evidence
+
+- Pattern in exportStyle: mixed
+
+---
+id: qusto-testing-vitest
+trigger: "When writing tests"
+confidence: 0.95
+domain: testing
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Testing Vitest
+
+## Action
+
+Use the Vitest framework
+
+## Evidence
+
+- testing.framework: vitest
+- vitest.config.ts present
+
+---
+id: qusto-testing-file-pattern
+trigger: "When creating a test file"
+confidence: 0.95
+domain: testing
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Testing File Pattern
+
+## Action
+
+Name the file with the pattern *.test.ts
+
+## Evidence
+
+- testing.filePattern: *.test.ts
+- Pattern in test file locations
+
+---
+id: qusto-testing-types
+trigger: "When adding tests for a feature"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Testing Types
+
+## Action
+
+Include unit, integration, and e2e tests as appropriate
+
+## Evidence
+
+- testing.testTypes: unit, integration, e2e
+- Examples in test files
+
+---
+id: qusto-testing-coverage-config
+trigger: "When configuring tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Testing Coverage Config
+
+## Action
+
+Enable and maintain test coverage configuration
+
+## Evidence
+
+- testing.coverageConfig: true
+- vitest.config.ts includes coverage
+
+---
+id: qusto-git-conventional-commits
+trigger: "When writing a commit message"
+confidence: 0.95
+domain: git
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Git Conventional Commits
+
+## Action
+
+Use conventional commit prefixes such as 'feat' or 'test'
+
+## Evidence
+
+- commits.type: conventional
+- commits.prefixes: feat, test
+- Examples in commit messages
+
+---
+id: qusto-git-commit-length
+trigger: "When composing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Git Commit Length
+
+## Action
+
+Write concise messages around 50 characters
+
+## Evidence
+
+- commits.averageLength: 51
+- Examples in commit messages
+
+---
+id: qusto-workflow-feature-implementation-with-tests
+trigger: "When someone wants to add a new feature, service, or module to a package or app"
+confidence: 0.95
+domain: workflow
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Feature Implementation With Tests
+
+## Action
+
+Create or update implementation files in src/, corresponding test files in test/, and update package.json or tsconfig if needed
+
+## Evidence
+
+- workflow: feature-implementation-with-tests
+- Example commit and file patterns
+
+---
+id: qusto-workflow-database-schema-and-repository-expansion
+trigger: "When someone wants to add new persistent data structures or change the database schema"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Database Schema And Repository Expansion
+
+## Action
+
+Create or update migration SQL files, repository files, schema.ts, and related test files
+
+## Evidence
+
+- workflow: database-schema-and-repository-expansion
+- Example commit and file patterns
+
+---
+id: qusto-workflow-api-endpoint-addition-with-tests
+trigger: "When someone wants to expose new API functionality"
+confidence: 0.88
+domain: workflow
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Api Endpoint Addition With Tests
+
+## Action
+
+Create new route handler files, update server logic, and add or update test files for the new endpoints
+
+## Evidence
+
+- workflow: api-endpoint-addition-with-tests
+- Example commit and file patterns
+
+---
+id: qusto-workflow-dashboard-feature-development
+trigger: "When someone wants to add or enhance dashboard functionality"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Dashboard Feature Development
+
+## Action
+
+Create or update React components in dashboard/, update server-side logic, and create or update test files for dashboard features
+
+## Evidence
+
+- workflow: dashboard-feature-development
+- Example commit and file patterns
+
+---
+id: qusto-workflow-test-specification-and-expansion
+trigger: "When someone wants to specify or improve tests for a feature or module"
+confidence: 0.92
+domain: workflow
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Workflow Test Specification And Expansion
+
+## Action
+
+Create or update test files in test/ directories and update test helpers or fixtures as needed
+
+## Evidence
+
+- workflow: test-specification-and-expansion
+- Example commit and file patterns
+
+---
+id: qusto-error-handling-try-catch
+trigger: "When handling errors in code"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: Nudgen-Marketing/qusto
+---
+
+# Qusto Error Handling Try Catch
+
+## Action
+
+Use try-catch blocks for error handling
+
+## Evidence
+
+- errorHandling.style: try-catch
+- Pattern in source files
+
