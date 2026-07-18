@@ -105,6 +105,15 @@ describe("spend chart model", () => {
     expect(model.maximumAtomic).toBeGreaterThan(0n);
     expectFinitePathWithinBounds(model.path, 600, 130);
   });
+
+  it("draws a visible segment for a single nonzero point", () => {
+    const model = buildSpendChartModel(
+      [{ amountAtomic: "1000000", timestamp: "2026-07-18T09:00:00.000Z" }],
+      { height: 130, width: 600 }
+    );
+
+    expect(model.path).toMatch(/^M[^ ]+ L[^ ]+$/);
+  });
 });
 
 describe("SpendChart", () => {

@@ -1185,6 +1185,9 @@ tbody tr.selected-row {
   .management-split {
     grid-template-columns: 1fr;
   }
+  .chart-axis span:nth-child(even) {
+    display: none;
+  }
   .management-content {
     padding: 12px;
   }

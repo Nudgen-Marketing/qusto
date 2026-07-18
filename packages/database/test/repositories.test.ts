@@ -181,10 +181,10 @@ describe("PostgreSQL repositories", () => {
       const repository = new PostgresEventRepository(database.url);
       const event: TraceEvent = {
         environmentId,
-        eventId: `event_invalid_amount_${amountAtomic.length}_${amountAtomic.slice(0, 3)}`,
+        eventId: `event_invalid_amount_${String(amountAtomic.length)}_${amountAtomic.slice(0, 3)}`,
         occurredAt: "2026-07-18T05:05:00.000Z",
         payload: { amountAtomic },
-        traceId: `trace_invalid_amount_${amountAtomic.length}`,
+        traceId: `trace_invalid_amount_${String(amountAtomic.length)}`,
         type: "payment.required"
       };
 

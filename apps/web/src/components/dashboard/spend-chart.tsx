@@ -66,14 +66,25 @@ export function buildSpendChartModel(
     return { empty: true, maximumAtomic, ticks };
   }
 
+  const yFor = (amount: bigint): number => {
+    const scaled = Number((amount * 1_000_000n) / maximumAtomic) / 1_000_000;
+    return dimensions.height - scaled * dimensions.height;
+  };
+  if (amounts.length === 1) {
+    const center = dimensions.width / 2;
+    const y = yFor(amounts[0] ?? 0n);
+    return {
+      empty: false,
+      maximumAtomic,
+      path: `M${coordinate(center - 1)},${coordinate(y)} L${coordinate(center + 1)},${coordinate(y)}`,
+      ticks
+    };
+  }
+
   const path = amounts
     .map((amount, index) => {
-      const x =
-        points.length === 1
-          ? dimensions.width / 2
-          : (dimensions.width * index) / (points.length - 1);
-      const scaled = Number((amount * 1_000_000n) / maximumAtomic) / 1_000_000;
-      const y = dimensions.height - scaled * dimensions.height;
+      const x = (dimensions.width * index) / (points.length - 1);
+      const y = yFor(amount);
       return `${index === 0 ? "M" : "L"}${coordinate(x)},${coordinate(y)}`;
     })
     .join(" ");

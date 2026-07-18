@@ -172,27 +172,16 @@ export class PostgresDashboardRepository {
   ): Promise<readonly SpendPoint[]> {
     const configuration = spendRangeConfiguration[range];
     const start = new Date(now.getTime() - configuration.durationMs);
-    const lastIncludedInstant = new Date(now.getTime() - 1);
+    const lastBucketStart = new Date(
+      now.getTime() - configuration.bucketSeconds * 1_000
+    );
     const rows = await this.client<{ amount_atomic: string; bucket: Date }[]>`
-      WITH bounds AS (
-        SELECT
-          date_bin(
-            make_interval(secs => ${configuration.bucketSeconds}),
-            ${start},
-            TIMESTAMPTZ '2000-01-01 00:00:00+00'
-          ) AS first_bucket,
-          date_bin(
-            make_interval(secs => ${configuration.bucketSeconds}),
-            ${lastIncludedInstant},
-            TIMESTAMPTZ '2000-01-01 00:00:00+00'
-          ) AS last_bucket
-      ), buckets AS (
+      WITH buckets AS (
         SELECT generate_series(
-          first_bucket,
-          last_bucket,
+          ${start},
+          ${lastBucketStart},
           make_interval(secs => ${configuration.bucketSeconds})
         ) AS bucket
-        FROM bounds
       )
       SELECT
         buckets.bucket,
@@ -277,7 +266,8 @@ export class PostgresDashboardRepository {
         : await this.client<{ event_type: string; occurred_at: Date }[]>`
             SELECT event_type, occurred_at
             FROM trace_events
-            WHERE trace_id = ${selectedProjection.id}
+            WHERE environment_id = ${context.environmentId}
+              AND trace_id = ${selectedProjection.id}
             ORDER BY occurred_at
           `;
     return {
@@ -328,23 +318,25 @@ export class PostgresDashboardRepository {
       {
         id: string;
         published_at: Date | null;
-        rules: unknown;
+        rules_json: string;
         status: string;
         version: number;
       }[]
     >`
-      SELECT id, version, status::text, rules, published_at
+      SELECT id, version, status::text, rules::text AS rules_json, published_at
       FROM policy_versions
       WHERE environment_id = ${environmentId}
       ORDER BY version DESC
     `;
-    return rows.map((row) => ({
-      ...row,
-      rules:
-        typeof row.rules === "string"
-          ? (JSON.parse(row.rules) as unknown)
-          : row.rules
-    }));
+    return rows.map(({ rules_json: rulesJson, ...row }) => {
+      let rules: unknown = rulesJson;
+      try {
+        rules = JSON.parse(rulesJson) as unknown;
+      } catch {
+        // Invalid stored data is classified as a policy-health error.
+      }
+      return { ...row, rules };
+    });
   }
 
   async listTraces(environmentId: string, query = "") {

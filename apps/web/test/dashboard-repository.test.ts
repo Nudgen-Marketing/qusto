@@ -12,7 +12,7 @@ import {
 } from "../../../packages/database/test/helpers";
 
 const baseUsdc = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
-const now = new Date("2026-07-18T10:00:00.000Z");
+const now = new Date("2026-07-18T10:02:00.000Z");
 
 describe("PostgresDashboardRepository overview charts", () => {
   let context: DashboardContext;
@@ -58,24 +58,24 @@ describe("PostgresDashboardRepository overview charts", () => {
       role: "admin"
     };
 
-    const validRules = JSON.stringify([
+    const validRules = [
       {
         id: "max-spend",
         kind: "max-amount",
         maxAmountAtomic: "10000000",
         phases: ["buyer"]
       }
-    ]);
+    ];
     await sql`
       INSERT INTO policy_versions (environment_id, version, status, rules)
       VALUES
-        (${productionId}, 1, 'published', ${validRules}::jsonb),
-        (${productionId}, 2, 'archived', ${validRules}::jsonb),
-        (${productionId}, 3, 'draft', ${validRules}::jsonb),
+        (${productionId}, 1, 'published', ${sql.json(validRules)}::jsonb),
+        (${productionId}, 2, 'archived', ${sql.json(validRules)}::jsonb),
+        (${productionId}, 3, 'draft', ${sql.json(validRules)}::jsonb),
         (${productionId}, 4, 'published', '{"broken":true}'::jsonb),
-        (${productionId}, 5, 'published', to_jsonb(${validRules}::text)),
+        (${productionId}, 5, 'published', to_jsonb(${JSON.stringify(validRules)}::text)),
         (${productionId}, 6, 'published', to_jsonb('not-json'::text)),
-        (${stagingId}, 1, 'published', ${validRules}::jsonb)
+        (${stagingId}, 1, 'published', ${sql.json(validRules)}::jsonb)
     `;
 
     const traces = [

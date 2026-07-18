@@ -68,7 +68,8 @@ export class PostgresPolicyAdminRepository implements PolicyAdminRepository {
         id, environment_id, version, status, rules, published_at, published_by, created_by
       ) VALUES (
         ${version.id}, ${version.environmentId}, ${version.version}, ${version.status},
-        ${JSON.stringify(version.rules)}::jsonb, ${version.publishedAt ?? null},
+        ${sql.json(version.rules as unknown as postgres.JSONValue)}::jsonb,
+        ${version.publishedAt ?? null},
         (SELECT id FROM users WHERE id = ${version.publishedBy ?? null} LIMIT 1),
         (SELECT id FROM users WHERE id = ${version.createdBy} LIMIT 1)
       )

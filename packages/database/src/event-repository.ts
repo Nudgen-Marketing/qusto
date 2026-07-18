@@ -14,6 +14,14 @@ function traceStatus(type: TraceEvent["type"]): string {
   return "in_progress";
 }
 
+function traceAmount(value: unknown): string | null {
+  if (value === undefined) return null;
+  if (typeof value !== "string" || !/^(0|[1-9]\d{0,77})$/.test(value)) {
+    throw new Error("Invalid atomic amount");
+  }
+  return value;
+}
+
 export class PostgresEventRepository implements EventRepository {
   private readonly client: postgres.Sql;
 
@@ -34,10 +42,7 @@ export class PostgresEventRepository implements EventRepository {
     await this.client.begin(async (sql) => {
       for (const event of events) {
         const payload = JSON.stringify(event.payload);
-        const amountAtomic =
-          typeof event.payload.amountAtomic === "string"
-            ? event.payload.amountAtomic
-            : null;
+        const amountAtomic = traceAmount(event.payload.amountAtomic);
         const asset =
           typeof event.payload.asset === "string" ? event.payload.asset : null;
         const network =
@@ -85,7 +90,7 @@ export class PostgresEventRepository implements EventRepository {
             ${payload}::jsonb, ${event.occurredAt}
           )
         `;
-        await sql`
+        const projection = await sql<{ environment_id: string }[]>`
           INSERT INTO traces (
             id, environment_id, status, last_event_type, protocol_version,
             network, asset, amount_atomic, payer, payee, resource_url,
@@ -110,7 +115,12 @@ export class PostgresEventRepository implements EventRepository {
             policy_outcome = COALESCE(EXCLUDED.policy_outcome, traces.policy_outcome),
             last_seen_at = GREATEST(traces.last_seen_at, EXCLUDED.last_seen_at),
             metadata = traces.metadata || EXCLUDED.metadata
+          WHERE traces.environment_id = EXCLUDED.environment_id
+          RETURNING environment_id
         `;
+        if (projection.length === 0) {
+          throw new Error("Trace ID belongs to another environment");
+        }
         if (event.type === "settlement.submitted") {
           const transactionHash = event.payload.transactionHash;
           if (
