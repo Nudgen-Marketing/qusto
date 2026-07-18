@@ -614,18 +614,15 @@ a {
     Menlo,
     monospace;
 }
-.copy-success,
-.copy-error {
+.visually-hidden {
   position: absolute;
-  top: 8px;
-  right: 58px;
-  font-size: 10px;
-}
-.copy-success {
-  color: var(--success);
-}
-.copy-error {
-  color: var(--danger);
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .guide-security {
   display: grid;
@@ -861,13 +858,15 @@ tbody tr.selected-row {
 }
 .chart-panel,
 .policy-health {
-  min-height: 204px;
+  min-height: 232px;
   padding: 13px;
   background: #041123;
 }
 .chart-panel header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  gap: 16px;
   font-size: 12px;
 }
 .chart-panel nav {
@@ -881,13 +880,17 @@ tbody tr.selected-row {
   color: var(--muted);
   font-size: 11px;
 }
+.chart-panel button:focus-visible {
+  outline: 2px solid #72adff;
+  outline-offset: 3px;
+}
 .chart-panel .text-active,
 .accent {
   color: #3d91ff;
 }
 .chart-panel svg {
   width: 100%;
-  height: 126px;
+  height: 124px;
   overflow: visible;
 }
 .chart-grid {
@@ -895,12 +898,26 @@ tbody tr.selected-row {
   stroke: #19314b;
   stroke-dasharray: 3 3;
 }
+.chart-y-axis {
+  fill: var(--muted);
+  font:
+    9px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  text-anchor: end;
+}
 .chart-line {
   fill: none;
   stroke: var(--accent);
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+.chart-empty {
+  fill: var(--muted);
+  font-size: 11px;
+  text-anchor: middle;
 }
 .chart-axis {
   display: flex;
@@ -911,6 +928,20 @@ tbody tr.selected-row {
     SFMono-Regular,
     Menlo,
     monospace;
+}
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.chart-legend span {
+  width: 18px;
+  height: 2px;
+  display: inline-block;
+  background: var(--accent);
 }
 .policy-health > strong {
   font-size: 12px;

@@ -33,17 +33,18 @@ export function CodeSnippet({
           ) : (
             <Copy aria-hidden="true" />
           )}
-          Copy
+          {status === "Copied"
+            ? "Copied"
+            : status === "Copy failed"
+              ? "Retry copy"
+              : "Copy"}
         </button>
       </div>
       <pre>
         <code>{code}</code>
       </pre>
       {status === undefined ? null : (
-        <span
-          className={status === "Copied" ? "copy-success" : "copy-error"}
-          role="status"
-        >
+        <span className="visually-hidden" role="status">
           {status}
         </span>
       )}

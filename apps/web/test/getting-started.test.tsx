@@ -24,22 +24,21 @@ describe("Getting started guide", () => {
 
     expect(html).toContain("process.env.QUSTO_API_KEY");
     expect(html).toContain("&lt;your-environment-api-key&gt;");
-    expect(html).toContain("Wallet private keys stay in your local MCP process");
+    expect(html).toContain(
+      "Wallet private keys stay in your local MCP process"
+    );
     expect(html).not.toMatch(/qsk_[A-Za-z0-9_-]{20,}/);
     expect(html).not.toMatch(/0x[a-fA-F0-9]{64}/);
   });
 
   it("marks Getting started as the current sidebar destination", () => {
     const html = renderToStaticMarkup(
-      createElement(
-        AppFrame,
-        {
-          active: "Getting started",
-          children: createElement(GettingStartedGuide),
-          environment: "production",
-          title: "Getting started"
-        }
-      )
+      createElement(AppFrame, {
+        active: "Getting started",
+        children: createElement(GettingStartedGuide),
+        environment: "production",
+        title: "Getting started"
+      })
     );
 
     expect(html).toContain('href="/getting-started"');
