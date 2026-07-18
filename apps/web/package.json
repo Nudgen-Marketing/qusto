@@ -1,0 +1,31 @@
+{
+  "name": "@qusto/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "lint": "eslint src test",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@qusto/contracts": "workspace:*",
+    "@qusto/control-plane": "workspace:*",
+    "@qusto/database": "workspace:*",
+    "@qusto/policy-engine": "workspace:*",
+    "better-auth": "^1.6.23",
+    "lucide-react": "^0.468.0",
+    "next": "^16.2.10",
+    "pg": "^8.16.3",
+    "postgres": "^3.4.7",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.5",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3"
+  }
+}

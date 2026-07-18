@@ -1,0 +1,13 @@
+.git
+.github
+**/.next
+**/.turbo
+coverage
+**/dist
+**/node_modules
+playwright-report
+.playwright-mcp
+test-results
+.env*
+!.env.example
+**/*.tsbuildinfo

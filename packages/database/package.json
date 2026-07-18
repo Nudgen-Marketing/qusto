@@ -1,0 +1,36 @@
+{
+  "name": "@qusto/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./public-runtime": {
+      "types": "./src/public-runtime.ts",
+      "import": "./dist/public-runtime.js"
+    },
+    "./policy-admin": {
+      "types": "./src/policy-admin-repository.ts",
+      "import": "./dist/policy-admin-repository.js"
+    },
+    "./registration": {
+      "types": "./src/registration-repository.ts",
+      "import": "./dist/registration-repository.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "eslint src test",
+    "migrate": "node dist/cli.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@qusto/control-plane": "workspace:*",
+    "@qusto/policy-engine": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.7"
+  }
+}
