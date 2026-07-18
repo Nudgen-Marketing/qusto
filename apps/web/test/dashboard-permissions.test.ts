@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   assertDashboardPermission,
   parseEventTypes,
-  parsePolicyRules
+  parsePolicyRules,
+  validatePolicyRules
 } from "../src/server/dashboard-permissions";
 
 describe("dashboard management permissions", () => {
@@ -58,6 +59,28 @@ describe("dashboard management permissions", () => {
       parsePolicyRules(
         '[{"id":"x","kind":"max-amount","maxAmountAtomic":"-1","phases":["buyer"]}]'
       )
+    ).toThrow("Invalid policy rules");
+  });
+
+  it("uses the same pure validator for stored policy rules", () => {
+    const storedRules = [
+      {
+        id: "daily-limit",
+        kind: "rolling-limit",
+        maxAmountAtomic: "100000000",
+        phases: ["buyer"],
+        windowSeconds: 86_400
+      }
+    ];
+
+    expect(validatePolicyRules(storedRules)).toEqual(storedRules);
+    expect(() => validatePolicyRules({ rules: storedRules })).toThrow(
+      "Policy rules must be an array"
+    );
+    expect(() =>
+      validatePolicyRules([
+        { id: "future", kind: "unsupported-rule", phases: ["buyer"] }
+      ])
     ).toThrow("Invalid policy rules");
   });
 });
