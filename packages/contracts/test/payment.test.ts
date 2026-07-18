@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizePaymentRequired } from "../src/index.js";
+import {
+  eventBatchSchema,
+  normalizePaymentRequired,
+  policyEvaluationRequestSchema
+} from "../src/index.js";
 
 describe("normalizePaymentRequired", () => {
   it("normalizes a v1 Base payment requirement", () => {
@@ -70,6 +74,53 @@ describe("normalizePaymentRequired", () => {
             maxTimeoutSeconds: 30
           }
         ]
+      })
+    ).toThrow();
+  });
+});
+
+describe("public API contracts", () => {
+  it("accepts a complete policy evaluation request", () => {
+    const request = policyEvaluationRequestSchema.parse({
+      amountAtomic: "12500000",
+      asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      idempotencyKey: "pay_01JZ9M7ENM8WD8CQXT6BC44GYR",
+      network: "eip155:8453",
+      payee: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      payer: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      phase: "buyer",
+      protocolVersion: 2,
+      resourceUrl: "https://api.example.com/v1/data",
+      scheme: "exact",
+      traceId: "01JZ9M7ENM8WD8CQXT6BC44GYQ"
+    });
+
+    expect(request.amountAtomic).toBe("12500000");
+  });
+
+  it("rejects batches larger than 100 events and unsafe resource URLs", () => {
+    const event = {
+      eventId: "01JZ9M7ENM8WD8CQXT6BC44GYQ",
+      occurredAt: "2026-07-18T04:00:00.000Z",
+      payload: {},
+      traceId: "01JZ9M7ENM8WD8CQXT6BC44GYR",
+      type: "payment.required"
+    };
+
+    expect(() => eventBatchSchema.parse({ events: Array.from({ length: 101 }, () => event) })).toThrow();
+    expect(() =>
+      policyEvaluationRequestSchema.parse({
+        amountAtomic: "1",
+        asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        idempotencyKey: "pay_01JZ9M7ENM8WD8CQXT6BC44GYR",
+        network: "eip155:8453",
+        payee: "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        payer: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        phase: "buyer",
+        protocolVersion: 2,
+        resourceUrl: "file:///etc/passwd",
+        scheme: "exact",
+        traceId: "01JZ9M7ENM8WD8CQXT6BC44GYQ"
       })
     ).toThrow();
   });

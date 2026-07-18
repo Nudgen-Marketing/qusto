@@ -42,6 +42,15 @@ importers:
         specifier: ^4.1.12
         version: 4.4.3
 
+  packages/control-plane:
+    dependencies:
+      '@qusto/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@qusto/policy-engine':
+        specifier: workspace:*
+        version: link:../policy-engine
+
   packages/policy-engine: {}
 
 packages:
