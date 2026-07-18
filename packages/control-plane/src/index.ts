@@ -3,3 +3,4 @@ export * from "./events.js";
 export * from "./policy-admin.js";
 export * from "./policy-service.js";
 export * from "./reservations.js";
+export * from "./registration.js";
