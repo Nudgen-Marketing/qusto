@@ -31,5 +31,12 @@ CMD ["node", "apps/web/.next/standalone/apps/web/server.js"]
 FROM runtime AS worker
 CMD ["node", "apps/worker/dist/main.js"]
 
+FROM runtime AS test-seller
+EXPOSE 4021
+CMD ["node", "apps/test-seller/dist/main.js"]
+
+FROM runtime AS sepolia-e2e
+CMD ["pnpm", "test:e2e:sepolia"]
+
 FROM runtime AS migrate
 CMD ["node", "packages/database/dist/cli.js"]

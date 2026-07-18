@@ -1,9 +1,10 @@
 import { hostname } from "node:os";
 
+import { resolveBaseNetwork } from "@qusto/contracts";
 import { PostgresJobRepository } from "./job-repository.js";
 import { PostgresMaintenance } from "./maintenance.js";
 import { PostgresWorkerOperations } from "./operations.js";
-import { createJsonRpcCall } from "./rpc.js";
+import { createJsonRpcCall, validateBaseRpcNetwork } from "./rpc.js";
 import { runWorkerBatch } from "./worker-loop.js";
 
 function required(name: string): string {
@@ -32,16 +33,19 @@ async function main(): Promise<void> {
   const repository = new PostgresJobRepository(databaseUrl);
   const maintenance = new PostgresMaintenance(databaseUrl);
   const operations = new PostgresWorkerOperations(databaseUrl);
+  const network = resolveBaseNetwork(process.env.BASE_NETWORK);
+  const rpc = createJsonRpcCall(required("BASE_RPC_URL"));
+  await validateBaseRpcNetwork(rpc, network);
   const handlers = operations.handlers({
     encryptionKey: required("QUSTO_ENCRYPTION_KEY"),
     maintenance,
-    rpc: createJsonRpcCall(required("BASE_RPC_URL"))
+    rpc
   });
   const shutdown = new AbortController();
   const stop = () => shutdown.abort();
   process.once("SIGINT", stop);
   process.once("SIGTERM", stop);
-  log("info", "worker.started", { workerId });
+  log("info", "worker.started", { network: network.caip2, workerId });
 
   while (!shutdown.signal.aborted) {
     try {

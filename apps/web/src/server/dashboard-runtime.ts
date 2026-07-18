@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { resolveBaseNetwork } from "@qusto/contracts";
 
 import { getAuth } from "./auth";
 import {
@@ -13,7 +14,10 @@ export function getDashboardRepository(): PostgresDashboardRepository {
   const url = process.env.DATABASE_URL;
   if (url === undefined || url.length === 0)
     throw new Error("DATABASE_URL is required");
-  repository ??= new PostgresDashboardRepository(url);
+  repository ??= new PostgresDashboardRepository(
+    url,
+    resolveBaseNetwork(process.env.BASE_NETWORK)
+  );
   return repository;
 }
 

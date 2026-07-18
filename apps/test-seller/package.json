@@ -1,22 +1,27 @@
 {
-  "name": "@qusto/worker",
+  "name": "@qusto/test-seller",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "dev": "tsx watch src/main.ts",
     "lint": "eslint src test",
     "start": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@qusto/contracts": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@qusto/control-plane": "workspace:*",
-    "@qusto/database": "workspace:*",
+    "@qusto/contracts": "workspace:*",
+    "@qusto/mcp": "workspace:*",
+    "@qusto/sdk": "workspace:*",
+    "@x402/core": "^2.19.0",
+    "@x402/evm": "^2.19.0",
+    "@x402/express": "^2.19.0",
+    "express": "^5.2.1",
     "postgres": "^3.4.7"
   },
   "devDependencies": {
-    "tsx": "^4.21.0"
+    "@types/express": "^5.0.6"
   }
 }

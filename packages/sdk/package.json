@@ -20,6 +20,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@qusto/contracts": "workspace:*"
+    "@qusto/contracts": "workspace:*",
+    "@x402/core": "^2.19.0"
   }
 }

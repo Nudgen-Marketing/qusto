@@ -56,4 +56,6 @@ Trace retention defaults to 90 days and audit/policy-decision retention to 365 d
 
 Use a reliable Base RPC provider with receipt and `finalized` block support. Qusto does not scan the chain globally; it reconciles only transaction hashes observed through instrumented flows. If RPC is unavailable, policy decisions continue, while reconciliation jobs retry.
 
+Set `BASE_NETWORK` to `base` or `base-sepolia` and keep `BASE_RPC_URL` on the same chain. The worker checks `eth_chainId` at startup and exits before claiming jobs when they do not match. Base Sepolia is intended for test deployments and the opt-in live E2E profile; its USDC and native tokens have no financial value.
+
 During an incident, preserve logs and audit entries, rotate affected API/webhook/auth secrets, disable compromised webhooks, and revoke project API keys from Settings. A leaked encryption key requires generating a new key and recreating all webhook secrets.

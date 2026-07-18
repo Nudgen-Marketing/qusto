@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import postgres from "postgres";
+import { resolveBaseNetwork, type BaseNetworkConfig } from "@qusto/contracts";
 
 import { createApiKey, hashInvitationToken } from "@qusto/control-plane";
 import {
@@ -14,8 +15,6 @@ import {
 } from "../components/dashboard/demo-data";
 import { validatePolicyRules } from "./dashboard-permissions";
 
-const baseMainnet = "eip155:8453";
-const baseUsdc = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const spendRangeConfiguration: Readonly<
   Record<
     SpendRange,
@@ -42,6 +41,7 @@ export interface DashboardContext {
 
 interface TraceProjectionRow {
   amount_atomic: string | null;
+  asset: string | null;
   id: string;
   last_seen_at: Date;
   metadata: Record<string, unknown>;
@@ -115,9 +115,11 @@ function traceRow(row: TraceProjectionRow): TraceRow {
 
 export class PostgresDashboardRepository {
   private readonly client: postgres.Sql;
+  private readonly network: BaseNetworkConfig;
 
-  constructor(url: string) {
+  constructor(url: string, network = resolveBaseNetwork()) {
     this.client = postgres(url, { max: 10 });
+    this.network = network;
   }
 
   async userCount(): Promise<number> {
@@ -195,8 +197,8 @@ export class PostgresDashboardRepository {
           ${now}
         )
         AND traces.status IN ('settled', 'finalized')
-        AND traces.network = ${baseMainnet}
-        AND lower(traces.asset) = lower(${baseUsdc})
+        AND traces.network = ${this.network.caip2}
+        AND lower(traces.asset) = lower(${this.network.usdcAddress})
       GROUP BY buckets.bucket
       ORDER BY buckets.bucket
     `;
@@ -218,8 +220,8 @@ export class PostgresDashboardRepository {
           count(*) FILTER (WHERE policy_outcome = 'deny')::text AS denied,
           COALESCE(sum(amount_atomic) FILTER (
             WHERE status IN ('settled', 'finalized')
-              AND network = ${baseMainnet}
-              AND lower(asset) = lower(${baseUsdc})
+              AND network = ${this.network.caip2}
+              AND lower(asset) = lower(${this.network.usdcAddress})
           ), 0)::text AS spend
         FROM traces
         WHERE environment_id = ${context.environmentId}
@@ -228,8 +230,8 @@ export class PostgresDashboardRepository {
       `,
       this.client<TraceProjectionRow[]>`
         SELECT
-          id, amount_atomic::text, payer, resource_url, policy_outcome, network,
-          transaction_hash, last_seen_at, metadata
+          id, amount_atomic::text, asset, payer, resource_url, policy_outcome,
+          network, transaction_hash, last_seen_at, metadata
         FROM traces
         WHERE environment_id = ${context.environmentId}
         ORDER BY last_seen_at DESC
@@ -343,8 +345,8 @@ export class PostgresDashboardRepository {
     const search = `%${query}%`;
     return this.client<TraceProjectionRow[]>`
       SELECT
-        id, amount_atomic::text, payer, resource_url, policy_outcome, network,
-        transaction_hash, last_seen_at, metadata
+        id, amount_atomic::text, asset, payer, resource_url, policy_outcome,
+        network, transaction_hash, last_seen_at, metadata
       FROM traces
       WHERE environment_id = ${environmentId}
         AND (
@@ -360,8 +362,8 @@ export class PostgresDashboardRepository {
   async traceDetail(environmentId: string, traceId: string) {
     const traces = await this.client<TraceProjectionRow[]>`
       SELECT
-        id, amount_atomic::text, payer, resource_url, policy_outcome, network,
-        transaction_hash, last_seen_at, metadata
+        id, amount_atomic::text, asset, payer, resource_url, policy_outcome,
+        network, transaction_hash, last_seen_at, metadata
       FROM traces WHERE environment_id = ${environmentId} AND id = ${traceId} LIMIT 1
     `;
     const events = await this.client<

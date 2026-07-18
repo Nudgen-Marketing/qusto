@@ -1,3 +1,4 @@
+import type { BaseNetworkConfig } from "@qusto/contracts";
 import type { RpcCall } from "./reconciliation.js";
 
 interface JsonRpcResponse {
@@ -33,4 +34,17 @@ export function createJsonRpcCall(
     }
     return body.result;
   };
+}
+
+export async function validateBaseRpcNetwork(
+  rpc: RpcCall,
+  network: BaseNetworkConfig
+): Promise<void> {
+  const actual = await rpc("eth_chainId", []);
+  const expected = `0x${network.chainId.toString(16)}`;
+  if (typeof actual !== "string" || actual.toLowerCase() !== expected) {
+    throw new Error(
+      `BASE_RPC_URL returned chain ID ${String(actual)}; expected ${expected} for ${network.name}`
+    );
+  }
 }

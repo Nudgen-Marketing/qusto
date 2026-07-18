@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
-import { normalizePaymentRequired } from "@qusto/contracts";
+import { decodePaymentResponseHeader } from "@x402/core/http";
+import { normalizePaymentRequired, resolveBaseNetwork } from "@qusto/contracts";
 import type { PublicTraceEvent } from "@qusto/contracts";
 
 import { PolicyDeniedError } from "./errors.js";
@@ -23,6 +24,29 @@ function apiUrl(baseUrl: string, path: string): string {
     throw new Error("Qusto baseUrl must use HTTP(S)");
   }
   return url.toString();
+}
+
+function settlementHeader(response: Response): string | undefined {
+  return (
+    response.headers.get("payment-response") ??
+    response.headers.get("x-payment-response") ??
+    undefined
+  );
+}
+
+function settlementTransaction(
+  header: string,
+  expectedNetwork: string
+): string {
+  const receipt = decodePaymentResponseHeader(header);
+  if (!receipt.success) throw new Error("Settlement receipt was unsuccessful");
+  if (resolveBaseNetwork(receipt.network).caip2 !== expectedNetwork) {
+    throw new Error("Settlement receipt network does not match requirement");
+  }
+  if (!/^0x[a-fA-F0-9]{64}$/.test(receipt.transaction)) {
+    throw new Error("Settlement receipt transaction hash is invalid");
+  }
+  return receipt.transaction;
 }
 
 function parseDecision(value: unknown, traceId: string): QustoDecision {
@@ -250,11 +274,31 @@ export function createQusto(config: QustoConfig) {
         signal: request.signal,
         ...(requestBody === undefined ? {} : { body: requestBody })
       });
-      emit(
-        traceId,
-        response.ok ? "settlement.succeeded" : "settlement.failed",
-        { status: response.status }
-      );
+      if (!response.ok) {
+        emit(traceId, "settlement.failed", { status: response.status });
+        return response;
+      }
+      const receipt = settlementHeader(response);
+      if (receipt === undefined) {
+        emit(traceId, "settlement.succeeded", { status: response.status });
+        return response;
+      }
+      try {
+        const transactionHash = settlementTransaction(
+          receipt,
+          requirement.network
+        );
+        emit(traceId, "settlement.submitted", { transactionHash });
+        emit(traceId, "settlement.succeeded", {
+          status: response.status,
+          transactionHash
+        });
+      } catch {
+        emit(traceId, "settlement.failed", {
+          errorCode: "INVALID_SETTLEMENT_RESPONSE",
+          status: response.status
+        });
+      }
       return response;
     };
 

@@ -26,6 +26,7 @@ const mcpExample = `{
         "QUSTO_BASE_URL": "https://qusto.example.com",
         "QUSTO_API_KEY": "<your-environment-api-key>",
         "X402_PRIVATE_KEY": "<your-local-wallet-private-key>",
+        "BASE_NETWORK": "base",
         "BASE_RPC_URL": "https://mainnet.base.org"
       }
     }

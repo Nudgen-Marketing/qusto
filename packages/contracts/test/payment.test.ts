@@ -16,6 +16,7 @@ describe("normalizePaymentRequired", () => {
           network: "base",
           maxAmountRequired: "12500000",
           asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          extra: { name: "USD Coin", version: "2" },
           payTo: "0x1111111111111111111111111111111111111111",
           resource: "https://api.example.com/v1/data",
           maxTimeoutSeconds: 60
@@ -30,6 +31,7 @@ describe("normalizePaymentRequired", () => {
         {
           amountAtomic: "12500000",
           asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          extra: { name: "USD Coin", version: "2" },
           maxTimeoutSeconds: 60,
           network: "eip155:8453",
           payTo: "0x1111111111111111111111111111111111111111",
@@ -49,6 +51,11 @@ describe("normalizePaymentRequired", () => {
           network: "eip155:8453",
           amount: "2500000",
           asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          extra: {
+            assetTransferMethod: "eip3009",
+            name: "USD Coin",
+            version: "2"
+          },
           payTo: "0x2222222222222222222222222222222222222222",
           maxTimeoutSeconds: 30
         }
@@ -57,6 +64,33 @@ describe("normalizePaymentRequired", () => {
 
     expect(result.protocolVersion).toBe(2);
     expect(result.requirements[0]?.amountAtomic).toBe("2500000");
+    expect(result.requirements[0]?.extra).toEqual({
+      assetTransferMethod: "eip3009",
+      name: "USD Coin",
+      version: "2"
+    });
+
+    const sourceExtra = requiredExtra();
+    const normalized = normalizePaymentRequired({
+      accepts: [
+        {
+          amount: "1",
+          asset: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+          extra: sourceExtra,
+          maxTimeoutSeconds: 30,
+          network: "base-sepolia",
+          payTo: "0x2222222222222222222222222222222222222222",
+          scheme: "exact"
+        }
+      ],
+      resource: { url: "https://api.example.com/testnet" },
+      x402Version: 2
+    });
+    sourceExtra.name = "mutated";
+    expect(normalized.requirements[0]).toMatchObject({
+      extra: { name: "USD Coin", version: "2" },
+      network: "eip155:84532"
+    });
   });
 
   it("rejects unsupported networks and non-atomic amounts", () => {
@@ -78,6 +112,10 @@ describe("normalizePaymentRequired", () => {
     ).toThrow();
   });
 });
+
+function requiredExtra(): Record<string, unknown> {
+  return { name: "USD Coin", version: "2" };
+}
 
 describe("public API contracts", () => {
   it("accepts a complete policy evaluation request", () => {

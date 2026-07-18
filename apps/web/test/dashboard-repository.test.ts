@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import postgres from "postgres";
+import { resolveBaseNetwork } from "@qusto/contracts";
 
 import { migrateDatabase } from "@qusto/database";
 import {
@@ -12,6 +13,7 @@ import {
 } from "../../../packages/database/test/helpers";
 
 const baseUsdc = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+const baseSepoliaUsdc = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
 const now = new Date("2026-07-18T10:02:00.000Z");
 
 describe("PostgresDashboardRepository overview charts", () => {
@@ -111,7 +113,7 @@ describe("PostgresDashboardRepository overview charts", () => {
         productionId,
         "settled",
         "eip155:84532",
-        baseUsdc,
+        baseSepoliaUsdc,
         "7000000",
         -15
       ],
@@ -212,5 +214,24 @@ describe("PostgresDashboardRepository overview charts", () => {
         ({ amountAtomic }) => amountAtomic === "0"
       )
     ).toBe(true);
+  });
+
+  it("uses the configured Base Sepolia network and USDC asset", async () => {
+    const sepoliaRepository = new PostgresDashboardRepository(
+      database.url,
+      resolveBaseNetwork("base-sepolia")
+    );
+    try {
+      const overview = await sepoliaRepository.overview(context, now);
+      expect(overview.metrics[0]?.value).toBe("7.0000 USDC");
+      expect(
+        overview.spendTrend["24H"].reduce(
+          (total, point) => total + BigInt(point.amountAtomic),
+          0n
+        )
+      ).toBe(7_000_000n);
+    } finally {
+      await sepoliaRepository.close();
+    }
   });
 });

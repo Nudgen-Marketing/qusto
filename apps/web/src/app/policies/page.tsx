@@ -3,6 +3,7 @@ import {
   type PaymentContext,
   type PolicyRule
 } from "@qusto/policy-engine";
+import { resolveBaseNetwork } from "@qusto/contracts";
 import { AppFrame } from "../../components/dashboard/app-frame";
 import { PolicyDraftForm } from "../../components/dashboard/management-forms";
 import {
@@ -24,6 +25,7 @@ export default async function PoliciesPage() {
     database.listTraces(context.environmentId)
   ]);
   const recent = traces[0];
+  const network = resolveBaseNetwork(process.env.BASE_NETWORK);
   return (
     <AppFrame
       active="Policies"
@@ -48,9 +50,8 @@ export default async function PoliciesPage() {
                   : evaluatePolicies(
                       {
                         amountAtomic: recent.amount_atomic ?? "0",
-                        asset:
-                          "eip155:8453/erc20:0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-                        network: recent.network ?? "eip155:8453",
+                        asset: `${recent.network ?? network.caip2}/erc20:${recent.asset ?? network.usdcAddress}`,
+                        network: recent.network ?? network.caip2,
                         payer: recent.payer ?? "unknown",
                         payee: "unknown",
                         phase: "buyer",

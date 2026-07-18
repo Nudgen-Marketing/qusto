@@ -1,19 +1,17 @@
 import { z } from "zod";
 
+import { resolveBaseNetwork, type BaseNetworkId } from "./network.js";
+
 const atomicAmountSchema = z.string().regex(/^(0|[1-9]\d*)$/);
 const addressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
+const extraSchema = z.record(z.string(), z.unknown()).default({});
 const baseNetworkSchema = z
   .enum(["base", "base-sepolia", "eip155:8453", "eip155:84532"])
-  .transform((network): "eip155:8453" | "eip155:84532" => {
-    if (network === "base" || network === "eip155:8453") {
-      return "eip155:8453";
-    }
-
-    return "eip155:84532";
-  });
+  .transform((network): BaseNetworkId => resolveBaseNetwork(network).caip2);
 
 const commonRequirementShape = {
   asset: addressSchema,
+  extra: extraSchema,
   maxTimeoutSeconds: z.number().int().positive().max(3_600),
   network: baseNetworkSchema,
   payTo: addressSchema,
@@ -45,6 +43,7 @@ const v2PaymentRequiredSchema = z.object({
 export interface CanonicalPaymentRequirement {
   readonly amountAtomic: string;
   readonly asset: string;
+  readonly extra: Readonly<Record<string, unknown>>;
   readonly maxTimeoutSeconds: number;
   readonly network: "eip155:8453" | "eip155:84532";
   readonly payTo: string;
@@ -76,6 +75,7 @@ export function normalizePaymentRequired(
       requirements: parsed.accepts.map((item) => ({
         amountAtomic: item.maxAmountRequired,
         asset: item.asset,
+        extra: structuredClone(item.extra),
         maxTimeoutSeconds: item.maxTimeoutSeconds,
         network: item.network,
         payTo: item.payTo,
@@ -89,8 +89,9 @@ export function normalizePaymentRequired(
 
   return {
     protocolVersion: 2,
-    requirements: parsed.accepts.map(({ amount, ...item }) => ({
+    requirements: parsed.accepts.map(({ amount, extra, ...item }) => ({
       amountAtomic: amount,
+      extra: structuredClone(extra),
       ...item
     })),
     resourceUrl: parsed.resource.url

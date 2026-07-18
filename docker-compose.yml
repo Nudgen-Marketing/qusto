@@ -5,6 +5,7 @@ x-qusto-environment: &qusto-environment
   BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET}
   BETTER_AUTH_URL: ${QUSTO_PUBLIC_URL:-http://localhost:3000}
   QUSTO_ENCRYPTION_KEY: ${QUSTO_ENCRYPTION_KEY:?Set QUSTO_ENCRYPTION_KEY}
+  BASE_NETWORK: ${BASE_NETWORK:-base}
   BASE_RPC_URL: ${BASE_RPC_URL:?Set BASE_RPC_URL}
 
 services:
@@ -66,5 +67,65 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  seller:
+    profiles: ["sepolia-e2e"]
+    build:
+      context: .
+      target: test-seller
+    restart: unless-stopped
+    environment:
+      SEPOLIA_E2E_FACILITATOR_URL: ${SEPOLIA_E2E_FACILITATOR_URL:-https://x402.org/facilitator}
+      SEPOLIA_E2E_PAY_TO: ${SEPOLIA_E2E_PAY_TO:-}
+      SEPOLIA_E2E_SELLER_PORT: 4021
+    ports:
+      - "${SEPOLIA_E2E_SELLER_PORT:-4021}:4021"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:4021/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  sepolia-e2e:
+    profiles: ["sepolia-e2e"]
+    build:
+      context: .
+      target: sepolia-e2e
+    environment:
+      <<: *qusto-environment
+      BASE_NETWORK: base-sepolia
+      DATABASE_URL: postgresql://qusto:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/qusto
+      QUSTO_BASE_URL: http://web:3000
+      QUSTO_ENVIRONMENT: development
+      QUSTO_MCP_ALLOW_PRIVATE: "true"
+      RUN_SEPOLIA_E2E: "true"
+      SEPOLIA_E2E_KEEP_DATA: ${SEPOLIA_E2E_KEEP_DATA:-false}
+      SEPOLIA_E2E_PAY_TO: ${SEPOLIA_E2E_PAY_TO:-}
+      SEPOLIA_E2E_SELLER_URL: http://seller:4021/weather
+      X402_PRIVATE_KEY_FILE: /run/secrets/base_sepolia_buyer_key
+    secrets:
+      - base_sepolia_buyer_key
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      web:
+        condition: service_healthy
+      worker:
+        condition: service_started
+      seller:
+        condition: service_healthy
+    restart: "no"
+
 volumes:
   qusto-postgres:
+
+secrets:
+  base_sepolia_buyer_key:
+    file: ${SEPOLIA_E2E_PRIVATE_KEY_FILE:-./.secrets/base-sepolia-private-key}
