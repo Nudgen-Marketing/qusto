@@ -38,6 +38,38 @@ describe("public API", () => {
     });
   });
 
+  it("completes a reservation only inside the API key environment", async () => {
+    let completedEnvironment: string | undefined;
+    const api = createPublicApi({
+      authenticate: async () => ({ environmentId: "env-a" }),
+      completeReservation: async (environmentId) => {
+        completedEnvironment = environmentId;
+        return { id: "res-1", status: "completed" };
+      },
+      evaluate: async () => ({}),
+      ingest: async () => ({ accepted: [], duplicates: [], rejected: [] }),
+      releaseReservation: async () => ({ id: "res-1", status: "released" })
+    });
+
+    const response = await api.completeReservation(
+      new Request(
+        "https://qusto.test/api/public/v1/reservations/res-1/complete",
+        {
+          body: JSON.stringify({
+            settledAt: "2026-07-18T00:00:00.000Z",
+            transactionHash: "0xabc"
+          }),
+          headers: { authorization: "Bearer token" },
+          method: "POST"
+        }
+      ),
+      "res-1"
+    );
+
+    expect(response.status).toBe(200);
+    expect(completedEnvironment).toBe("env-a");
+  });
+
   it("validates policy requests before invoking the service", async () => {
     const evaluate = vi.fn();
     const api = createPublicApi({

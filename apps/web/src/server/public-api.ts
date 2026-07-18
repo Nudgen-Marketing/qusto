@@ -22,11 +22,28 @@ export interface PublicApiDependencies {
     environmentId: string,
     events: readonly TraceEvent[]
   ): Promise<unknown>;
+  completeReservation?(
+    environmentId: string,
+    reservationId: string,
+    completion: Readonly<{ settledAt: string; transactionHash?: string }>
+  ): Promise<unknown>;
+  releaseReservation?(
+    environmentId: string,
+    reservationId: string
+  ): Promise<unknown>;
 }
 
 export interface PublicApi {
+  completeReservation(
+    request: Request,
+    reservationId: string
+  ): Promise<Response>;
   evaluate(request: Request): Promise<Response>;
   events(request: Request): Promise<Response>;
+  releaseReservation(
+    request: Request,
+    reservationId: string
+  ): Promise<Response>;
 }
 
 interface ApiError {
@@ -102,6 +119,54 @@ export function createPublicApi(
   dependencies: PublicApiDependencies
 ): PublicApi {
   return {
+    async completeReservation(request, reservationId) {
+      try {
+        const context = await authenticate(request, (token) =>
+          dependencies.authenticate(token)
+        );
+        if (isResponse(context)) return context;
+        const body = await requestJson(request);
+        if (
+          typeof body !== "object" ||
+          body === null ||
+          !("settledAt" in body) ||
+          typeof body.settledAt !== "string" ||
+          Number.isNaN(Date.parse(body.settledAt))
+        ) {
+          return errorResponse(
+            400,
+            "VALIDATION_ERROR",
+            "The completion is invalid"
+          );
+        }
+        if (dependencies.completeReservation === undefined) {
+          return errorResponse(
+            501,
+            "NOT_IMPLEMENTED",
+            "Reservation completion is unavailable"
+          );
+        }
+        const completion = {
+          settledAt: body.settledAt,
+          ...("transactionHash" in body &&
+          typeof body.transactionHash === "string"
+            ? { transactionHash: body.transactionHash }
+            : {})
+        };
+        const result = await dependencies.completeReservation(
+          context.environmentId,
+          reservationId,
+          completion
+        );
+        return Response.json({ data: result, ok: true });
+      } catch {
+        return errorResponse(
+          500,
+          "INTERNAL_ERROR",
+          "The request could not be completed"
+        );
+      }
+    },
     async evaluate(request) {
       try {
         const context = await authenticate(request, (token) =>
@@ -154,6 +219,33 @@ export function createPublicApi(
           )
         );
         return Response.json({ data: result, ok: true }, { status: 202 });
+      } catch {
+        return errorResponse(
+          500,
+          "INTERNAL_ERROR",
+          "The request could not be completed"
+        );
+      }
+    },
+
+    async releaseReservation(request, reservationId) {
+      try {
+        const context = await authenticate(request, (token) =>
+          dependencies.authenticate(token)
+        );
+        if (isResponse(context)) return context;
+        if (dependencies.releaseReservation === undefined) {
+          return errorResponse(
+            501,
+            "NOT_IMPLEMENTED",
+            "Reservation release is unavailable"
+          );
+        }
+        const result = await dependencies.releaseReservation(
+          context.environmentId,
+          reservationId
+        );
+        return Response.json({ data: result, ok: true });
       } catch {
         return errorResponse(
           500,
