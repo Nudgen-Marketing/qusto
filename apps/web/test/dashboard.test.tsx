@@ -17,6 +17,8 @@ describe("Dashboard", () => {
     expect(html).toContain("Policy coverage");
     expect(html).toContain("Create policy");
     expect(html).toContain("Settlement confirmed");
+    expect(html).toContain('href="/getting-started"');
+    expect(html).toContain("Getting started");
   });
 
   it("uses a table for traces rather than a grid of cards", () => {
