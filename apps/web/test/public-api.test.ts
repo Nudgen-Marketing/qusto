@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createPublicApi } from "../src/server/public-api.js";
+import { createPublicApi } from "../src/server/public-api";
 
 const validEvaluation = {
   amountAtomic: "12500000",
@@ -55,7 +55,9 @@ describe("public API", () => {
 
     expect(response.status).toBe(400);
     expect(evaluate).not.toHaveBeenCalled();
-    expect(await response.json()).toMatchObject({ error: { code: "VALIDATION_ERROR" } });
+    expect(await response.json()).toMatchObject({
+      error: { code: "VALIDATION_ERROR" }
+    });
   });
 
   it("returns an allowed policy decision", async () => {
@@ -121,7 +123,9 @@ describe("public API", () => {
     expect(response.status).toBe(202);
     expect(ingest).toHaveBeenCalledWith(
       "env_prod",
-      expect.arrayContaining([expect.objectContaining({ type: "payment.required" })])
+      expect.arrayContaining([
+        expect.objectContaining({ type: "payment.required" })
+      ])
     );
   });
 });

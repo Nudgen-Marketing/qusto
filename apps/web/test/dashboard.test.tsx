@@ -2,8 +2,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { Dashboard } from "../src/components/dashboard/dashboard.js";
-import { demoDashboardData } from "../src/components/dashboard/demo-data.js";
+import { Dashboard } from "../src/components/dashboard/dashboard";
+import { demoDashboardData } from "../src/components/dashboard/demo-data";
 
 describe("Dashboard", () => {
   it("renders the primary governance workflow from the accepted concept", () => {
