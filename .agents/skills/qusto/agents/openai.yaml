@@ -1,0 +1,6 @@
+interface:
+  display_name: "Qusto"
+  short_description: "Repo-specific patterns and workflows for qusto"
+  default_prompt: "Use the qusto repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true
