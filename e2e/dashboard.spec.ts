@@ -27,6 +27,43 @@ test("keeps the primary dashboard usable at a mobile viewport", async ({
   await expect(page.locator(".trace-table-wrap")).toBeVisible();
 });
 
+test("switches preloaded spend ranges without navigating", async ({ page }) => {
+  await page.goto("/");
+  const initialUrl = page.url();
+  const oneHour = page.getByRole("button", { name: "1H", exact: true });
+  const twentyFourHours = page.getByRole("button", {
+    name: "24H",
+    exact: true
+  });
+
+  await expect(twentyFourHours).toHaveAttribute("aria-pressed", "true");
+  await expect(oneHour).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("img", { name: /24 hours/i })).toBeVisible();
+
+  await oneHour.click();
+
+  await expect(oneHour).toHaveAttribute("aria-pressed", "true");
+  await expect(twentyFourHours).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("img", { name: /1 hour/i })).toBeVisible();
+  expect(page.url()).toBe(initialUrl);
+});
+
+test("renders policy health from dashboard data", async ({ page }) => {
+  await page.goto("/");
+  const policyHealth = page.locator(".policy-health");
+
+  await expect(policyHealth).toContainText("Healthy policies");
+  await expect(policyHealth).toContainText("40");
+  await expect(policyHealth).toContainText("83.3%");
+  await expect(policyHealth).toContainText("Policies with warnings");
+  await expect(policyHealth).toContainText("6");
+  await expect(policyHealth).toContainText("Policies with errors");
+  await expect(policyHealth).toContainText("2");
+  await expect(
+    policyHealth.getByRole("link", { name: /View all policies/i })
+  ).toHaveAttribute("href", "/policies");
+});
+
 test("renders first-admin onboarding with install instructions", async ({
   page
 }) => {

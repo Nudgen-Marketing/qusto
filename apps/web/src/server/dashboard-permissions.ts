@@ -131,15 +131,20 @@ function parseRule(value: unknown): PolicyRule {
   throw new Error("Invalid policy rules");
 }
 
-export function parsePolicyRules(value: string): readonly PolicyRule[] {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(value) as unknown;
-  } catch {
-    throw new Error("Policy rules must be valid JSON");
-  }
-  if (!Array.isArray(parsed)) throw new Error("Policy rules must be an array");
-  if (parsed.length > 100)
+export function validatePolicyRules(value: unknown): readonly PolicyRule[] {
+  if (!Array.isArray(value)) throw new Error("Policy rules must be an array");
+  if (value.length > 100)
     throw new Error("Policy rules cannot exceed 100 entries");
-  return parsed.map(parseRule);
+  return value.map(parseRule);
+}
+
+export function parsePolicyRules(value: string): readonly PolicyRule[] {
+  try {
+    return validatePolicyRules(JSON.parse(value) as unknown);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error("Policy rules must be valid JSON");
+    }
+    throw error;
+  }
 }

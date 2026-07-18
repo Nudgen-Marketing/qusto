@@ -3,10 +3,31 @@ import { randomUUID } from "node:crypto";
 import postgres from "postgres";
 
 import { createApiKey, hashInvitationToken } from "@qusto/control-plane";
-import type {
-  DashboardData,
-  TraceRow
+import {
+  spendRanges,
+  type DashboardData,
+  type PolicyHealthSummary,
+  type SpendPoint,
+  type SpendRange,
+  type SpendTrend,
+  type TraceRow
 } from "../components/dashboard/demo-data";
+import { validatePolicyRules } from "./dashboard-permissions";
+
+const baseMainnet = "eip155:8453";
+const baseUsdc = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+const spendRangeConfiguration: Readonly<
+  Record<
+    SpendRange,
+    { readonly bucketSeconds: number; readonly durationMs: number }
+  >
+> = {
+  "1H": { bucketSeconds: 300, durationMs: 60 * 60_000 },
+  "6H": { bucketSeconds: 1_800, durationMs: 6 * 60 * 60_000 },
+  "24H": { bucketSeconds: 3_600, durationMs: 24 * 60 * 60_000 },
+  "7D": { bucketSeconds: 21_600, durationMs: 7 * 24 * 60 * 60_000 },
+  "30D": { bucketSeconds: 86_400, durationMs: 30 * 24 * 60 * 60_000 }
+};
 
 export type DashboardRole = "admin" | "developer" | "viewer";
 
@@ -29,6 +50,33 @@ interface TraceProjectionRow {
   policy_outcome: "allow" | "deny" | null;
   resource_url: string | null;
   transaction_hash: string | null;
+}
+
+interface PolicyVersionProjection {
+  readonly rules: unknown;
+  readonly status: string;
+}
+
+export function summarizePolicyHealth(
+  versions: readonly PolicyVersionProjection[]
+): PolicyHealthSummary {
+  return versions.reduce<PolicyHealthSummary>(
+    (summary, version) => {
+      try {
+        validatePolicyRules(version.rules);
+      } catch {
+        return { ...summary, error: summary.error + 1 };
+      }
+      if (version.status === "draft") {
+        return { ...summary, warning: summary.warning + 1 };
+      }
+      if (version.status === "published" || version.status === "archived") {
+        return { ...summary, healthy: summary.healthy + 1 };
+      }
+      return { ...summary, error: summary.error + 1 };
+    },
+    { error: 0, healthy: 0, total: versions.length, warning: 0 }
+  );
 }
 
 function compact(value: string | null, fallback = "—"): string {
@@ -117,27 +165,100 @@ export class PostgresDashboardRepository {
         };
   }
 
-  async overview(context: DashboardContext): Promise<DashboardData> {
-    const [metric] = await this.client<
-      { denied: string; payments: string; spend: string }[]
-    >`
+  private async spendSeries(
+    environmentId: string,
+    range: SpendRange,
+    now: Date
+  ): Promise<readonly SpendPoint[]> {
+    const configuration = spendRangeConfiguration[range];
+    const start = new Date(now.getTime() - configuration.durationMs);
+    const lastIncludedInstant = new Date(now.getTime() - 1);
+    const rows = await this.client<{ amount_atomic: string; bucket: Date }[]>`
+      WITH bounds AS (
+        SELECT
+          date_bin(
+            make_interval(secs => ${configuration.bucketSeconds}),
+            ${start},
+            TIMESTAMPTZ '2000-01-01 00:00:00+00'
+          ) AS first_bucket,
+          date_bin(
+            make_interval(secs => ${configuration.bucketSeconds}),
+            ${lastIncludedInstant},
+            TIMESTAMPTZ '2000-01-01 00:00:00+00'
+          ) AS last_bucket
+      ), buckets AS (
+        SELECT generate_series(
+          first_bucket,
+          last_bucket,
+          make_interval(secs => ${configuration.bucketSeconds})
+        ) AS bucket
+        FROM bounds
+      )
       SELECT
-        count(*)::text AS payments,
-        count(*) FILTER (WHERE policy_outcome = 'deny')::text AS denied,
-        COALESCE(sum(amount_atomic) FILTER (WHERE status IN ('settled', 'finalized')), 0)::text AS spend
-      FROM traces
-      WHERE environment_id = ${context.environmentId}
-        AND last_seen_at >= now() - interval '24 hours'
+        buckets.bucket,
+        COALESCE(sum(traces.amount_atomic), 0)::text AS amount_atomic
+      FROM buckets
+      LEFT JOIN traces ON
+        traces.environment_id = ${environmentId}
+        AND traces.last_seen_at >= GREATEST(buckets.bucket, ${start})
+        AND traces.last_seen_at < LEAST(
+          buckets.bucket + make_interval(secs => ${configuration.bucketSeconds}),
+          ${now}
+        )
+        AND traces.status IN ('settled', 'finalized')
+        AND traces.network = ${baseMainnet}
+        AND lower(traces.asset) = lower(${baseUsdc})
+      GROUP BY buckets.bucket
+      ORDER BY buckets.bucket
     `;
-    const traces = await this.client<TraceProjectionRow[]>`
-      SELECT
-        id, amount_atomic::text, payer, resource_url, policy_outcome, network,
-        transaction_hash, last_seen_at, metadata
-      FROM traces
-      WHERE environment_id = ${context.environmentId}
-      ORDER BY last_seen_at DESC
-      LIMIT 50
-    `;
+    return rows.map((row) => ({
+      amountAtomic: row.amount_atomic,
+      timestamp: row.bucket.toISOString()
+    }));
+  }
+
+  async overview(
+    context: DashboardContext,
+    now = new Date()
+  ): Promise<DashboardData> {
+    const metricWindowStart = new Date(now.getTime() - 24 * 60 * 60_000);
+    const [metrics, traces, policyVersions, spendSeries] = await Promise.all([
+      this.client<{ denied: string; payments: string; spend: string }[]>`
+        SELECT
+          count(*)::text AS payments,
+          count(*) FILTER (WHERE policy_outcome = 'deny')::text AS denied,
+          COALESCE(sum(amount_atomic) FILTER (
+            WHERE status IN ('settled', 'finalized')
+              AND network = ${baseMainnet}
+              AND lower(asset) = lower(${baseUsdc})
+          ), 0)::text AS spend
+        FROM traces
+        WHERE environment_id = ${context.environmentId}
+          AND last_seen_at >= ${metricWindowStart}
+          AND last_seen_at < ${now}
+      `,
+      this.client<TraceProjectionRow[]>`
+        SELECT
+          id, amount_atomic::text, payer, resource_url, policy_outcome, network,
+          transaction_hash, last_seen_at, metadata
+        FROM traces
+        WHERE environment_id = ${context.environmentId}
+        ORDER BY last_seen_at DESC
+        LIMIT 50
+      `,
+      this.listPolicyVersions(context.environmentId),
+      Promise.all(
+        spendRanges.map(
+          async (range) =>
+            [
+              range,
+              await this.spendSeries(context.environmentId, range, now)
+            ] as const
+        )
+      )
+    ]);
+    const metric = metrics[0];
+    const spendTrend = Object.fromEntries(spendSeries) as SpendTrend;
     const rows = traces.map(traceRow);
     const selectedProjection = traces[0];
     const selected = rows[0] ?? {
@@ -186,11 +307,13 @@ export class PostgresDashboardRepository {
           value: "—"
         }
       ],
+      policyHealth: summarizePolicyHealth(policyVersions),
       selectedTrace: {
         ...selected,
         network: selectedProjection?.network ?? "Base",
         transaction: compact(selectedProjection?.transaction_hash ?? null)
       },
+      spendTrend,
       timeline: timeline.map((event) => ({
         duration: "",
         label: event.event_type.replaceAll(".", " "),
@@ -201,7 +324,7 @@ export class PostgresDashboardRepository {
   }
 
   async listPolicyVersions(environmentId: string) {
-    return this.client<
+    const rows = await this.client<
       {
         id: string;
         published_at: Date | null;
@@ -215,6 +338,13 @@ export class PostgresDashboardRepository {
       WHERE environment_id = ${environmentId}
       ORDER BY version DESC
     `;
+    return rows.map((row) => ({
+      ...row,
+      rules:
+        typeof row.rules === "string"
+          ? (JSON.parse(row.rules) as unknown)
+          : row.rules
+    }));
   }
 
   async listTraces(environmentId: string, query = "") {

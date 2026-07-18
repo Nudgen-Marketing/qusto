@@ -38,7 +38,9 @@ describe("PostgresDashboardRepository overview charts", () => {
         (${project?.id}, 'staging', 'closed')
       RETURNING id, name::text
     `;
-    const productionId = environments.find(({ name }) => name === "production")?.id;
+    const productionId = environments.find(
+      ({ name }) => name === "production"
+    )?.id;
     const stagingId = environments.find(({ name }) => name === "staging")?.id;
     if (
       organization === undefined ||
@@ -77,17 +79,89 @@ describe("PostgresDashboardRepository overview charts", () => {
     `;
 
     const traces = [
-      ["settled-current", productionId, "settled", "eip155:8453", baseUsdc, "1000000", -10],
-      ["finalized-prior", productionId, "finalized", "eip155:8453", baseUsdc.toUpperCase(), "2500000", -70],
-      ["window-start", productionId, "settled", "eip155:8453", baseUsdc, "5000000", -1_440],
-      ["excluded-testnet", productionId, "settled", "eip155:84532", baseUsdc, "7000000", -15],
-      ["excluded-asset", productionId, "settled", "eip155:8453", "0x0000000000000000000000000000000000000001", "9000000", -20],
-      ["excluded-failed", productionId, "failed", "eip155:8453", baseUsdc, "11000000", -25],
-      ["excluded-end", productionId, "settled", "eip155:8453", baseUsdc, "13000000", 0],
-      ["excluded-environment", stagingId, "settled", "eip155:8453", baseUsdc, "17000000", -5]
+      [
+        "settled-current",
+        productionId,
+        "settled",
+        "eip155:8453",
+        baseUsdc,
+        "1000000",
+        -10
+      ],
+      [
+        "finalized-prior",
+        productionId,
+        "finalized",
+        "eip155:8453",
+        baseUsdc.toUpperCase(),
+        "2500000",
+        -70
+      ],
+      [
+        "window-start",
+        productionId,
+        "settled",
+        "eip155:8453",
+        baseUsdc,
+        "5000000",
+        -1_440
+      ],
+      [
+        "excluded-testnet",
+        productionId,
+        "settled",
+        "eip155:84532",
+        baseUsdc,
+        "7000000",
+        -15
+      ],
+      [
+        "excluded-asset",
+        productionId,
+        "settled",
+        "eip155:8453",
+        "0x0000000000000000000000000000000000000001",
+        "9000000",
+        -20
+      ],
+      [
+        "excluded-failed",
+        productionId,
+        "failed",
+        "eip155:8453",
+        baseUsdc,
+        "11000000",
+        -25
+      ],
+      [
+        "excluded-end",
+        productionId,
+        "settled",
+        "eip155:8453",
+        baseUsdc,
+        "13000000",
+        0
+      ],
+      [
+        "excluded-environment",
+        stagingId,
+        "settled",
+        "eip155:8453",
+        baseUsdc,
+        "17000000",
+        -5
+      ]
     ] as const;
 
-    for (const [id, environmentId, status, network, asset, amount, minutes] of traces) {
+    for (const [
+      id,
+      environmentId,
+      status,
+      network,
+      asset,
+      amount,
+      minutes
+    ] of traces) {
       const timestamp = new Date(now.getTime() + minutes * 60_000);
       await sql`
         INSERT INTO traces (
@@ -134,7 +208,9 @@ describe("PostgresDashboardRepository overview charts", () => {
       )
     ).toBe(true);
     expect(
-      overview.spendTrend["24H"].some(({ amountAtomic }) => amountAtomic === "0")
+      overview.spendTrend["24H"].some(
+        ({ amountAtomic }) => amountAtomic === "0"
+      )
     ).toBe(true);
   });
 });

@@ -9,6 +9,7 @@ import {
 
 import type { DashboardData, TraceRow } from "./demo-data";
 import { DashboardSidebar } from "./sidebar";
+import { SpendChart } from "./spend-chart";
 
 function MetricStrip({ data }: { readonly data: DashboardData["metrics"] }) {
   return (
@@ -80,46 +81,15 @@ function TraceTable({ traces }: { readonly traces: DashboardData["traces"] }) {
   );
 }
 
-function SpendChart() {
-  return (
-    <section className="chart-panel">
-      <header>
-        <strong>Spend trend (USDC)</strong>
-        <nav>
-          <button>1H</button>
-          <button>6H</button>
-          <button className="text-active">24H</button>
-          <button>7D</button>
-          <button>30D</button>
-        </nav>
-      </header>
-      <svg
-        aria-label="USDC spend increased over the last 24 hours"
-        role="img"
-        viewBox="0 0 600 130"
-      >
-        <g className="chart-grid">
-          <path d="M0 20H600M0 55H600M0 90H600M0 125H600" />
-        </g>
-        <path
-          className="chart-line"
-          d="M0 116 24 105 48 108 72 96 96 99 120 88 144 83 168 76 192 79 216 66 240 58 264 63 288 54 312 50 336 70 360 82 384 86 408 68 432 58 456 49 480 38 504 32 528 35 552 28 576 20 600 8"
-        />
-      </svg>
-      <div className="chart-axis">
-        <span>10:00</span>
-        <span>14:00</span>
-        <span>18:00</span>
-        <span>22:00</span>
-        <span>02:00</span>
-        <span>06:00</span>
-        <span>10:00</span>
-      </div>
-    </section>
-  );
+function percentage(count: number, total: number): string {
+  return `${(total === 0 ? 0 : (count / total) * 100).toFixed(1)}%`;
 }
 
-function PolicyHealth() {
+function PolicyHealth({
+  data
+}: {
+  readonly data: DashboardData["policyHealth"];
+}) {
   return (
     <section className="policy-health">
       <strong>Policy health</strong>
@@ -132,7 +102,7 @@ function PolicyHealth() {
             Healthy policies
           </dt>
           <dd>
-            40 <small>83.3%</small>
+            {data.healthy} <small>{percentage(data.healthy, data.total)}</small>
           </dd>
         </div>
         <div>
@@ -140,7 +110,7 @@ function PolicyHealth() {
             <span className="health-icon warning">!</span>Policies with warnings
           </dt>
           <dd>
-            6 <small>12.5%</small>
+            {data.warning} <small>{percentage(data.warning, data.total)}</small>
           </dd>
         </div>
         <div>
@@ -151,12 +121,12 @@ function PolicyHealth() {
             Policies with errors
           </dt>
           <dd>
-            2 <small>4.2%</small>
+            {data.error} <small>{percentage(data.error, data.total)}</small>
           </dd>
         </div>
         <div>
           <dt>Total policies</dt>
-          <dd>48</dd>
+          <dd>{data.total}</dd>
         </div>
       </dl>
       <a href="/policies">
@@ -233,7 +203,7 @@ function TraceDetail({ data }: { readonly data: DashboardData }) {
         <dl>
           <div>
             <dt>Total policies</dt>
-            <dd>48</dd>
+            <dd>{data.policyHealth.total}</dd>
           </div>
           <div>
             <dt>Resources covered</dt>
@@ -318,8 +288,8 @@ export function Dashboard({ data }: { readonly data: DashboardData }) {
             <h2 className="section-title">Live payment traces</h2>
             <TraceTable traces={data.traces} />
             <div className="lower-grid">
-              <SpendChart />
-              <PolicyHealth />
+              <SpendChart series={data.spendTrend} />
+              <PolicyHealth data={data.policyHealth} />
             </div>
           </div>
           <TraceDetail data={data} />

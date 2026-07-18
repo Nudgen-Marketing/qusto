@@ -13,19 +13,13 @@ const ranges = {
     { amountAtomic: "1000000", timestamp: "2026-07-18T09:00:00.000Z" },
     { amountAtomic: "2000000", timestamp: "2026-07-18T09:05:00.000Z" }
   ],
-  "6H": [
-    { amountAtomic: "3000000", timestamp: "2026-07-18T04:00:00.000Z" }
-  ],
+  "6H": [{ amountAtomic: "3000000", timestamp: "2026-07-18T04:00:00.000Z" }],
   "24H": [
     { amountAtomic: "4000000", timestamp: "2026-07-17T10:00:00.000Z" },
     { amountAtomic: "6000000", timestamp: "2026-07-17T11:00:00.000Z" }
   ],
-  "7D": [
-    { amountAtomic: "7000000", timestamp: "2026-07-11T10:00:00.000Z" }
-  ],
-  "30D": [
-    { amountAtomic: "8000000", timestamp: "2026-06-18T10:00:00.000Z" }
-  ]
+  "7D": [{ amountAtomic: "7000000", timestamp: "2026-07-11T10:00:00.000Z" }],
+  "30D": [{ amountAtomic: "8000000", timestamp: "2026-06-18T10:00:00.000Z" }]
 } as const;
 
 function expectFinitePathWithinBounds(
@@ -52,9 +46,7 @@ describe("spend chart model", () => {
     expect(niceAtomicMaximum(3n)).toBe(5n);
     expect(niceAtomicMaximum(11n)).toBe(20n);
     expect(niceAtomicMaximum(5_000_001n)).toBe(10_000_000n);
-    expect(niceAtomicMaximum(BigInt("9".repeat(78)))).toBe(
-      10n ** 78n
-    );
+    expect(niceAtomicMaximum(BigInt("9".repeat(78)))).toBe(10n ** 78n);
   });
 
   it("omits the fabricated line for empty and all-zero series", () => {
@@ -117,10 +109,12 @@ describe("spend chart model", () => {
 
 describe("SpendChart", () => {
   it("starts at 24H with accessible selected state and summary", () => {
-    const html = renderToStaticMarkup(createElement(SpendChart, { series: ranges }));
+    const html = renderToStaticMarkup(
+      createElement(SpendChart, { series: ranges })
+    );
 
-    expect(html).toContain('aria-pressed="true">24H</button>');
-    expect(html).toContain('aria-pressed="false">1H</button>');
+    expect(html).toMatch(/<button[^>]*aria-pressed="true"[^>]*>24H<\/button>/);
+    expect(html).toMatch(/<button[^>]*aria-pressed="false"[^>]*>1H<\/button>/);
     expect(html).toMatch(/aria-label="[^"]*24 hours[^"]*"/i);
     expect(html).toContain("USDC");
   });
@@ -132,7 +126,9 @@ describe("SpendChart", () => {
         [{ amountAtomic: "0", timestamp: "2026-07-18T09:00:00.000Z" }]
       ])
     ) as unknown as typeof ranges;
-    const html = renderToStaticMarkup(createElement(SpendChart, { series: zero }));
+    const html = renderToStaticMarkup(
+      createElement(SpendChart, { series: zero })
+    );
 
     expect(html).toContain("No settled USDC spend");
     expect(html).not.toContain('class="chart-line"');
