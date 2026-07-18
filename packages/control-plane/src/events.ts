@@ -1,4 +1,4 @@
-import { traceEventSchema } from "@qusto/contracts";
+import { sanitizeTracePayload, traceEventSchema } from "@qusto/contracts";
 
 export interface TraceEvent {
   readonly environmentId: string;
@@ -44,8 +44,13 @@ export async function ingestEvents(
 
   for (const event of events) {
     const result = traceEventSchema.safeParse(event);
-    if (result.success) valid.push(event);
-    else rejected.push(event.eventId);
+    if (result.success) {
+      try {
+        valid.push({ ...event, payload: sanitizeTracePayload(event.payload) });
+      } catch {
+        rejected.push(event.eventId);
+      }
+    } else rejected.push(event.eventId);
   }
 
   const inserted =

@@ -121,4 +121,47 @@ describe("PostgreSQL repositories", () => {
     await sql.end();
     await repository.close();
   });
+
+  it("enqueues webhook and reconciliation jobs once for qualifying events", async () => {
+    const sql = postgres(database.url, { max: 1 });
+    await sql`
+      INSERT INTO webhooks (environment_id, url, secret_ciphertext, event_types)
+      VALUES (${environmentId}, 'https://hooks.example.com', 'encrypted', ARRAY['policy.denied'])
+    `;
+    const repository = new PostgresEventRepository(database.url);
+    const events: TraceEvent[] = [
+      {
+        environmentId,
+        eventId: "event_policy_denied_00000001",
+        occurredAt: "2026-07-18T04:00:00.000Z",
+        payload: { authorization: "drop", reasonCodes: ["MAX_AMOUNT_EXCEEDED"] },
+        traceId: "trace_jobs_000000000000001",
+        type: "policy.denied"
+      },
+      {
+        environmentId,
+        eventId: "event_settlement_0000000001",
+        occurredAt: "2026-07-18T04:00:01.000Z",
+        payload: { transactionHash: "0xabc" },
+        traceId: "trace_jobs_000000000000001",
+        type: "settlement.submitted"
+      }
+    ];
+
+    await ingestEvents(events, repository);
+    await ingestEvents(events, repository);
+    const jobs = await sql<{ type: string }[]>`
+      SELECT type FROM jobs WHERE type IN ('webhook.deliver', 'chain.reconcile') ORDER BY type
+    `;
+    const [delivery] = await sql<{ payload: Record<string, unknown> }[]>`
+      SELECT payload FROM webhook_deliveries LIMIT 1
+    `;
+    expect(jobs.map(({ type }) => type)).toEqual([
+      "chain.reconcile",
+      "webhook.deliver"
+    ]);
+    expect(JSON.stringify(delivery?.payload)).not.toContain("authorization");
+    await repository.close();
+    await sql.end();
+  });
 });

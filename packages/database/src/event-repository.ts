@@ -66,6 +66,53 @@ export class PostgresEventRepository implements EventRepository {
             last_seen_at = GREATEST(traces.last_seen_at, EXCLUDED.last_seen_at),
             metadata = traces.metadata || EXCLUDED.metadata
         `;
+        if (event.type === "settlement.submitted") {
+          const transactionHash = event.payload.transactionHash;
+          if (typeof transactionHash === "string" && transactionHash.length > 0) {
+            await sql`
+              INSERT INTO jobs (type, payload)
+              VALUES (
+                'chain.reconcile',
+                ${JSON.stringify({
+                  environmentId: event.environmentId,
+                  traceId: event.traceId,
+                  transactionHash
+                })}::jsonb
+              )
+            `;
+          }
+        }
+        if (
+          event.type === "policy.denied" ||
+          event.type === "settlement.failed" ||
+          event.type === "chain.reverted"
+        ) {
+          const webhookPayload = JSON.stringify({
+            eventId: event.eventId,
+            occurredAt: event.occurredAt,
+            traceId: event.traceId,
+            type: event.type,
+            version: 1
+          });
+          const deliveries = await sql<{ id: string }[]>`
+            INSERT INTO webhook_deliveries (webhook_id, event_type, payload, next_attempt_at)
+            SELECT id, ${event.type}, ${webhookPayload}::jsonb, now()
+            FROM webhooks
+            WHERE environment_id = ${event.environmentId}
+              AND enabled = true
+              AND event_types @> ARRAY[${event.type}]::text[]
+            RETURNING id
+          `;
+          for (const delivery of deliveries) {
+            await sql`
+              INSERT INTO jobs (type, payload)
+              VALUES (
+                'webhook.deliver',
+                ${JSON.stringify({ deliveryId: delivery.id })}::jsonb
+              )
+            `;
+          }
+        }
         accepted.push(event.eventId);
       }
     });
