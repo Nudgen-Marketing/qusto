@@ -8,7 +8,8 @@ export interface TestDatabase {
 }
 
 export async function createTestDatabase(): Promise<TestDatabase> {
-  const adminUrl = process.env.POSTGRES_TEST_URL ?? "postgresql://localhost/postgres";
+  const adminUrl =
+    process.env.POSTGRES_TEST_URL ?? "postgresql://localhost/postgres";
   const databaseName = `qusto_test_${randomUUID().replaceAll("-", "")}`;
   const admin = postgres(adminUrl, { max: 1 });
 
@@ -19,7 +20,9 @@ export async function createTestDatabase(): Promise<TestDatabase> {
   return {
     url: url.toString(),
     async close() {
-      await admin.unsafe(`DROP DATABASE IF EXISTS ${databaseName} WITH (FORCE)`);
+      await admin.unsafe(
+        `DROP DATABASE IF EXISTS ${databaseName} WITH (FORCE)`
+      );
       await admin.end();
     }
   };

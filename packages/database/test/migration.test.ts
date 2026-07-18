@@ -58,7 +58,9 @@ describe("database migrations", () => {
     `;
 
     expect(table?.relkind).toBe("p");
-    expect(partitions.map(({ child }) => child)).toContain("trace_events_default");
+    expect(partitions.map(({ child }) => child)).toContain(
+      "trace_events_default"
+    );
     await sql.end();
   });
 });

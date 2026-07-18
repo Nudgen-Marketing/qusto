@@ -24,20 +24,27 @@ describe("PostgreSQL repositories", () => {
     const [organization] = await sql<{ id: string }[]>`
       INSERT INTO organizations (name) VALUES ('Qusto Test') RETURNING id
     `;
+    if (organization === undefined)
+      throw new Error("Failed to create organization");
     const [project] = await sql<{ id: string }[]>`
       INSERT INTO projects (organization_id, name, slug)
-      VALUES (${organization!.id}, 'Payments', 'payments') RETURNING id
+      VALUES (${organization.id}, 'Payments', 'payments') RETURNING id
     `;
+    if (project === undefined) throw new Error("Failed to create project");
     const [environment] = await sql<{ id: string }[]>`
       INSERT INTO environments (project_id, name, fail_mode)
-      VALUES (${project!.id}, 'production', 'closed') RETURNING id
+      VALUES (${project.id}, 'production', 'closed') RETURNING id
     `;
+    if (environment === undefined)
+      throw new Error("Failed to create environment");
     const [policyVersion] = await sql<{ id: string }[]>`
       INSERT INTO policy_versions (environment_id, version, status, rules)
-      VALUES (${environment!.id}, 1, 'published', '[]'::jsonb) RETURNING id
+      VALUES (${environment.id}, 1, 'published', '[]'::jsonb) RETURNING id
     `;
-    environmentId = environment!.id;
-    policyVersionId = policyVersion!.id;
+    if (policyVersion === undefined)
+      throw new Error("Failed to create policy version");
+    environmentId = environment.id;
+    policyVersionId = policyVersion.id;
     await sql.end();
   });
 
@@ -81,7 +88,10 @@ describe("PostgreSQL repositories", () => {
       )
     ]);
 
-    expect(decisions.map(({ outcome }) => outcome).sort()).toEqual(["allow", "deny"]);
+    expect(decisions.map(({ outcome }) => outcome).sort()).toEqual([
+      "allow",
+      "deny"
+    ]);
     await repository.close();
   });
 
@@ -96,8 +106,12 @@ describe("PostgreSQL repositories", () => {
       type: "payment.required"
     };
 
-    expect(await ingestEvents([event], repository)).toMatchObject({ accepted: [event.eventId] });
-    expect(await ingestEvents([event], repository)).toMatchObject({ duplicates: [event.eventId] });
+    expect(await ingestEvents([event], repository)).toMatchObject({
+      accepted: [event.eventId]
+    });
+    expect(await ingestEvents([event], repository)).toMatchObject({
+      duplicates: [event.eventId]
+    });
 
     const sql = postgres(database.url, { max: 1 });
     const [trace] = await sql<{ last_event_type: string }[]>`

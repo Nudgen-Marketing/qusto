@@ -56,6 +56,9 @@ importers:
       '@qusto/control-plane':
         specifier: workspace:*
         version: link:../control-plane
+      '@qusto/policy-engine':
+        specifier: workspace:*
+        version: link:../policy-engine
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(postgres@3.4.9)

@@ -25,10 +25,13 @@ export interface PolicyEvaluationInput {
 
 export interface PersistedDecision {
   readonly amountAtomic: string;
+  readonly asset: string;
   readonly decisionId: string;
   readonly environmentId: string;
   readonly idempotencyKey: string;
   readonly outcome: "allow" | "deny";
+  readonly payee: string;
+  readonly payer: string;
   readonly policyVersionId: string;
   readonly reasonCodes: readonly PolicyReasonCode[];
   readonly reservationExpiresAt?: string;
@@ -106,10 +109,13 @@ export async function evaluatePayment(
 
     return repository.saveDecision({
       amountAtomic: input.amountAtomic,
+      asset: input.asset,
       decisionId: `dec_${randomId()}`,
       environmentId: input.environmentId,
       idempotencyKey: input.idempotencyKey,
       outcome: decision.outcome,
+      payee: input.payee,
+      payer: input.payer,
       policyVersionId: input.policyVersionId,
       reasonCodes: decision.reasonCodes,
       ...reservation,
