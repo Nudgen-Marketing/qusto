@@ -27,27 +27,25 @@ describe("PostgresDashboardRepository overview charts", () => {
     const [organization] = await sql<{ id: string }[]>`
       INSERT INTO organizations (name) VALUES ('Dashboard tests') RETURNING id
     `;
+    if (organization === undefined)
+      throw new Error("Organization setup failed");
     const [project] = await sql<{ id: string }[]>`
       INSERT INTO projects (organization_id, name, slug)
-      VALUES (${organization?.id}, 'Payments', 'payments') RETURNING id
+      VALUES (${organization.id}, 'Payments', 'payments') RETURNING id
     `;
+    if (project === undefined) throw new Error("Project setup failed");
     const environments = await sql<{ id: string; name: string }[]>`
       INSERT INTO environments (project_id, name, fail_mode)
       VALUES
-        (${project?.id}, 'production', 'closed'),
-        (${project?.id}, 'staging', 'closed')
+        (${project.id}, 'production', 'closed'),
+        (${project.id}, 'staging', 'closed')
       RETURNING id, name::text
     `;
     const productionId = environments.find(
       ({ name }) => name === "production"
     )?.id;
     const stagingId = environments.find(({ name }) => name === "staging")?.id;
-    if (
-      organization === undefined ||
-      project === undefined ||
-      productionId === undefined ||
-      stagingId === undefined
-    ) {
+    if (productionId === undefined || stagingId === undefined) {
       throw new Error("Dashboard test setup failed");
     }
 

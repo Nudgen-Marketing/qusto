@@ -115,7 +115,10 @@ function axisPoints(points: readonly SpendPoint[]): readonly SpendPoint[] {
   for (let index = 0; index < 7; index += 1) {
     indices.add(Math.round((index * (points.length - 1)) / 6));
   }
-  return [...indices].map((index) => points[index]).filter(Boolean);
+  return [...indices].flatMap((index) => {
+    const point = points[index];
+    return point === undefined ? [] : [point];
+  });
 }
 
 export function SpendChart({ series }: { readonly series: SpendTrend }) {
