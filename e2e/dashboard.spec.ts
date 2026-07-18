@@ -94,18 +94,23 @@ test("opens the getting started guide from the sidebar and copies setup code", a
   await expect(
     page.getByRole("link", { name: "Open policies" })
   ).toHaveAttribute("href", "/policies");
-  await expect(
-    page.getByRole("link", { name: "View traces" })
-  ).toHaveAttribute("href", "/traces");
+  await expect(page.getByRole("link", { name: "View traces" })).toHaveAttribute(
+    "href",
+    "/traces"
+  );
 
-  await page.getByRole("button", { name: "Copy SDK installation command" }).click();
+  await page
+    .getByRole("button", { name: "Copy SDK installation command" })
+    .click();
   await expect(page.getByRole("status")).toHaveText("Copied");
   await expect(
     page.getByRole("link", { name: "Getting started" })
   ).toHaveAttribute("aria-current", "page");
 
   const viewportHasNoHorizontalOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth <= document.documentElement.clientWidth
+    () =>
+      document.documentElement.scrollWidth <=
+      document.documentElement.clientWidth
   );
   expect(viewportHasNoHorizontalOverflow).toBe(true);
 });
