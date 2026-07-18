@@ -1,46 +1,14 @@
 import {
-  Activity,
   Check,
   ChevronDown,
   CirclePause,
   ListFilter,
   Search,
-  Settings,
-  Shield,
-  Users,
-  Webhook,
   X
 } from "lucide-react";
 
 import type { DashboardData, TraceRow } from "./demo-data";
-
-const navigation = [
-  { href: "/", icon: Activity, label: "Overview" },
-  { href: "/traces", icon: Activity, label: "Traces" },
-  { href: "/policies", icon: Shield, label: "Policies" },
-  { href: "/webhooks", icon: Webhook, label: "Webhooks" },
-  { href: "/team", icon: Users, label: "Team" },
-  { href: "/settings", icon: Settings, label: "Settings" }
-] as const;
-
-function BrandMark() {
-  return (
-    <svg aria-hidden="true" className="brand-mark" viewBox="0 0 36 36">
-      <path
-        d="M18 2 31.9 10v16L18 34 4.1 26V10L18 2Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="5"
-      />
-      <path
-        d="m9 10 9 5 9-5M18 15v11"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-      />
-    </svg>
-  );
-}
+import { DashboardSidebar } from "./sidebar";
 
 function MetricStrip({ data }: { readonly data: DashboardData["metrics"] }) {
   return (
@@ -295,33 +263,19 @@ function TraceDetail({ data }: { readonly data: DashboardData }) {
 export function Dashboard({ data }: { readonly data: DashboardData }) {
   return (
     <main className="app-shell">
-      <aside className="sidebar">
-        <div className="brand">
-          <BrandMark />
-          <span>Qusto</span>
-        </div>
-        <nav className="primary-nav">
-          {navigation.map(({ href, icon: Icon, label }, index) => (
-            <a
-              aria-label={label}
-              className={index === 0 ? "active" : undefined}
-              href={href}
-              key={label}
-            >
-              <Icon />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-        <div className="connection">
-          <span>
-            <i />
-            Live connection
-          </span>
-          <small>Block 19,842,731</small>
-          <small>2s ago</small>
-        </div>
-      </aside>
+      <DashboardSidebar
+        active="Overview"
+        status={
+          <>
+            <span>
+              <i />
+              Live connection
+            </span>
+            <small>Block 19,842,731</small>
+            <small>2s ago</small>
+          </>
+        }
+      />
       <section className="workspace">
         <header className="topbar">
           <h1>Payment governance</h1>

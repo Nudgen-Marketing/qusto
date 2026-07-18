@@ -80,8 +80,11 @@ a {
 }
 .primary-nav {
   display: grid;
+  align-content: start;
+  flex: 1;
   gap: 5px;
   padding: 12px 8px;
+  overflow-y: auto;
 }
 .primary-nav a {
   height: 47px;
@@ -103,8 +106,15 @@ a {
   background: #0a2544;
   color: #4d9aff;
 }
+.brand:focus-visible,
+.primary-nav a:focus-visible,
+.guide-action:focus-visible,
+.code-snippet button:focus-visible {
+  outline: 2px solid #72adff;
+  outline-offset: 2px;
+}
 .connection {
-  margin: auto 15px 16px;
+  margin: 0 15px 16px;
   display: grid;
   gap: 8px;
   padding: 14px;
@@ -441,6 +451,194 @@ a {
   padding: 10px;
   background: #020d1d;
   color: #8fc2ff;
+}
+.getting-started {
+  width: min(1040px, 100%);
+  margin: 0 auto;
+}
+.guide-intro {
+  max-width: 680px;
+  margin-bottom: 24px;
+}
+.guide-intro h2 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  letter-spacing: -0.025em;
+}
+.guide-intro p,
+.guide-step-heading p,
+.integration-option header p,
+.guide-security p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.guide-steps {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.guide-steps > li {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 14px;
+}
+.guide-step-number {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #245b98;
+  border-radius: 50%;
+  background: #092342;
+  color: #83baff;
+  font:
+    12px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+.guide-step-content {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #041123;
+}
+.guide-step-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+}
+.guide-step-heading h3,
+.guide-security h3,
+.integration-option h4 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+.guide-action {
+  min-height: 36px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #245b98;
+  border-radius: 5px;
+  color: #72adff;
+  font-size: 12px;
+}
+.guide-action svg,
+.guide-note svg,
+.guide-security > svg {
+  width: 17px;
+  height: 17px;
+}
+.guide-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  color: #a8bdd5;
+  font-size: 11px;
+}
+.integration-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.integration-option {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #061629;
+}
+.integration-option header {
+  min-height: 55px;
+}
+.code-snippet {
+  position: relative;
+  margin-top: 12px;
+  border: 1px solid #172d46;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #020d1d;
+}
+.code-snippet-toolbar {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 9px 0 12px;
+  border-bottom: 1px solid #172d46;
+  color: var(--muted);
+  font:
+    10px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+.code-snippet button {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #a9cfff;
+  font-size: 10px;
+}
+.code-snippet button:hover {
+  background: #0b2543;
+}
+.code-snippet button svg {
+  width: 13px;
+  height: 13px;
+}
+.code-snippet pre {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  color: #b9d8ff;
+  font:
+    11px/1.55 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+.copy-success,
+.copy-error {
+  position: absolute;
+  top: 8px;
+  right: 58px;
+  font-size: 10px;
+}
+.copy-success {
+  color: var(--success);
+}
+.copy-error {
+  color: var(--danger);
+}
+.guide-security {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 12px;
+  margin: 18px 0 8px 52px;
+  padding: 16px;
+  border: 1px solid #23523f;
+  border-radius: 6px;
+  background: #061c20;
+}
+.guide-security > svg {
+  color: var(--success);
 }
 .workspace {
   min-width: 0;
@@ -958,6 +1156,19 @@ tbody tr.selected-row {
   }
   .management-content {
     padding: 12px;
+  }
+  .guide-step-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .guide-action {
+    align-self: flex-start;
+  }
+  .integration-grid {
+    grid-template-columns: 1fr;
+  }
+  .guide-security {
+    margin-left: 0;
   }
   .management-toolbar {
     align-items: stretch;

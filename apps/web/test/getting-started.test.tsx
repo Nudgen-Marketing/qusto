@@ -35,10 +35,10 @@ describe("Getting started guide", () => {
         AppFrame,
         {
           active: "Getting started",
+          children: createElement(GettingStartedGuide),
           environment: "production",
           title: "Getting started"
-        },
-        createElement(GettingStartedGuide)
+        }
       )
     );
 
