@@ -15,12 +15,12 @@ import {
 import type { DashboardData, TraceRow } from "./demo-data";
 
 const navigation = [
-  { icon: Activity, label: "Overview" },
-  { icon: Activity, label: "Traces" },
-  { icon: Shield, label: "Policies" },
-  { icon: Webhook, label: "Webhooks" },
-  { icon: Users, label: "Team" },
-  { icon: Settings, label: "Settings" }
+  { href: "/", icon: Activity, label: "Overview" },
+  { href: "/traces", icon: Activity, label: "Traces" },
+  { href: "/policies", icon: Shield, label: "Policies" },
+  { href: "/webhooks", icon: Webhook, label: "Webhooks" },
+  { href: "/team", icon: Users, label: "Team" },
+  { href: "/settings", icon: Settings, label: "Settings" }
 ] as const;
 
 function BrandMark() {
@@ -301,10 +301,10 @@ export function Dashboard({ data }: { readonly data: DashboardData }) {
           <span>Qusto</span>
         </div>
         <nav className="primary-nav">
-          {navigation.map(({ icon: Icon, label }, index) => (
+          {navigation.map(({ href, icon: Icon, label }, index) => (
             <a
               className={index === 0 ? "active" : undefined}
-              href={`/${label.toLowerCase()}`}
+              href={href}
               key={label}
             >
               <Icon />
@@ -328,7 +328,7 @@ export function Dashboard({ data }: { readonly data: DashboardData }) {
             <button className="environment">
               Production <ChevronDown />
             </button>
-            <a className="primary-button" href="/policies/new">
+            <a className="primary-button" href="/policies">
               Create policy
             </a>
           </div>

@@ -4,7 +4,7 @@ import postgres from "postgres";
 import { ingestEvents } from "@qusto/control-plane";
 import { PostgresEventRepository } from "@qusto/database/public-runtime";
 
-import { decryptSecret } from "./secret-box.js";
+import { decryptSecret } from "@qusto/control-plane";
 import { deliverWebhook } from "./webhook-delivery.js";
 import { reconcileTransaction } from "./reconciliation.js";
 import type { JobHandler } from "./worker-loop.js";

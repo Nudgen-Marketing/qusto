@@ -34,6 +34,38 @@ export class PostgresEventRepository implements EventRepository {
     await this.client.begin(async (sql) => {
       for (const event of events) {
         const payload = JSON.stringify(event.payload);
+        const amountAtomic =
+          typeof event.payload.amountAtomic === "string"
+            ? event.payload.amountAtomic
+            : null;
+        const asset =
+          typeof event.payload.asset === "string" ? event.payload.asset : null;
+        const network =
+          typeof event.payload.network === "string"
+            ? event.payload.network
+            : null;
+        const payee =
+          typeof event.payload.payee === "string" ? event.payload.payee : null;
+        const payer =
+          typeof event.payload.payer === "string" ? event.payload.payer : null;
+        const protocolVersion =
+          typeof event.payload.protocolVersion === "number"
+            ? event.payload.protocolVersion
+            : null;
+        const resourceUrl =
+          typeof event.payload.resourceUrl === "string"
+            ? event.payload.resourceUrl
+            : null;
+        const transactionHash =
+          typeof event.payload.transactionHash === "string"
+            ? event.payload.transactionHash
+            : null;
+        const policyOutcome =
+          event.type === "policy.allowed"
+            ? "allow"
+            : event.type === "policy.denied"
+              ? "deny"
+              : null;
         const inserted = await sql<{ id: string }[]>`
           INSERT INTO trace_event_dedup (id, occurred_at)
           VALUES (${event.eventId}, ${event.occurredAt})
@@ -55,20 +87,36 @@ export class PostgresEventRepository implements EventRepository {
         `;
         await sql`
           INSERT INTO traces (
-            id, environment_id, status, last_event_type, first_seen_at, last_seen_at, metadata
+            id, environment_id, status, last_event_type, protocol_version,
+            network, asset, amount_atomic, payer, payee, resource_url,
+            transaction_hash, policy_outcome, first_seen_at, last_seen_at, metadata
           ) VALUES (
             ${event.traceId}, ${event.environmentId}, ${traceStatus(event.type)}, ${event.type},
+            ${protocolVersion}, ${network}, ${asset}, ${amountAtomic}, ${payer}, ${payee},
+            ${resourceUrl}, ${transactionHash}, ${policyOutcome},
             ${event.occurredAt}, ${event.occurredAt}, ${payload}::jsonb
           )
           ON CONFLICT (id) DO UPDATE SET
             status = EXCLUDED.status,
             last_event_type = EXCLUDED.last_event_type,
+            protocol_version = COALESCE(EXCLUDED.protocol_version, traces.protocol_version),
+            network = COALESCE(EXCLUDED.network, traces.network),
+            asset = COALESCE(EXCLUDED.asset, traces.asset),
+            amount_atomic = COALESCE(EXCLUDED.amount_atomic, traces.amount_atomic),
+            payer = COALESCE(EXCLUDED.payer, traces.payer),
+            payee = COALESCE(EXCLUDED.payee, traces.payee),
+            resource_url = COALESCE(EXCLUDED.resource_url, traces.resource_url),
+            transaction_hash = COALESCE(EXCLUDED.transaction_hash, traces.transaction_hash),
+            policy_outcome = COALESCE(EXCLUDED.policy_outcome, traces.policy_outcome),
             last_seen_at = GREATEST(traces.last_seen_at, EXCLUDED.last_seen_at),
             metadata = traces.metadata || EXCLUDED.metadata
         `;
         if (event.type === "settlement.submitted") {
           const transactionHash = event.payload.transactionHash;
-          if (typeof transactionHash === "string" && transactionHash.length > 0) {
+          if (
+            typeof transactionHash === "string" &&
+            transactionHash.length > 0
+          ) {
             await sql`
               INSERT INTO jobs (type, payload)
               VALUES (

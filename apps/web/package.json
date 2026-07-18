@@ -14,6 +14,7 @@
     "@qusto/contracts": "workspace:*",
     "@qusto/control-plane": "workspace:*",
     "@qusto/database": "workspace:*",
+    "@qusto/policy-engine": "workspace:*",
     "better-auth": "^1.6.23",
     "lucide-react": "^0.468.0",
     "next": "^16.2.10",

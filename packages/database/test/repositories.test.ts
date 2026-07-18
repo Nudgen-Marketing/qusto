@@ -134,7 +134,10 @@ describe("PostgreSQL repositories", () => {
         environmentId,
         eventId: "event_policy_denied_00000001",
         occurredAt: "2026-07-18T04:00:00.000Z",
-        payload: { authorization: "drop", reasonCodes: ["MAX_AMOUNT_EXCEEDED"] },
+        payload: {
+          authorization: "drop",
+          reasonCodes: ["MAX_AMOUNT_EXCEEDED"]
+        },
         traceId: "trace_jobs_000000000000001",
         type: "policy.denied"
       },

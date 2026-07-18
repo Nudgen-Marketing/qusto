@@ -31,7 +31,9 @@ body {
   color: var(--text);
 }
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 button,
@@ -126,6 +128,319 @@ a {
   margin-right: 9px;
   border-radius: 50%;
   background: var(--success);
+}
+.connection i[data-connected="false"] {
+  background: var(--warning);
+}
+
+.management-content {
+  padding: 24px;
+}
+.management-toolbar,
+.management-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.management-toolbar {
+  margin-bottom: 18px;
+}
+.management-toolbar h2,
+.management-card h2,
+.management-card h3 {
+  margin: 0 0 7px;
+  font-size: 16px;
+}
+.management-toolbar p,
+.management-card > p,
+.management-card header p,
+.form-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.management-toolbar form {
+  display: flex;
+  gap: 8px;
+}
+.management-toolbar input,
+.management-form input,
+.management-form select,
+.management-form textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  outline: 0;
+  background: #031224;
+  color: var(--text);
+}
+.management-toolbar input {
+  width: min(420px, 42vw);
+}
+.management-toolbar button,
+.management-card button {
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #0a213d;
+}
+.management-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 16px;
+}
+.management-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.management-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #041123;
+}
+.table-card {
+  padding: 0;
+  overflow-x: auto;
+}
+.table-card table {
+  min-width: 760px;
+}
+.detail-card {
+  align-self: start;
+}
+.key-values {
+  margin: 18px 0;
+}
+.key-values div {
+  display: grid;
+  grid-template-columns: 75px minmax(0, 1fr);
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.key-values dt {
+  color: var(--muted);
+}
+.key-values dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.text-link {
+  color: #4d9aff;
+  font-size: 12px;
+}
+.event-list {
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.event-list li {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 10px;
+  min-height: 54px;
+}
+.event-list li > span {
+  width: 9px;
+  height: 9px;
+  margin-top: 3px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 4px #0b3829;
+}
+.event-list strong,
+.event-list time {
+  display: block;
+  font-size: 11px;
+}
+.event-list time {
+  margin-top: 5px;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.empty-state {
+  padding: 24px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+.management-form {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+}
+.management-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.management-form .primary-button {
+  justify-self: start;
+}
+.management-form textarea {
+  min-height: 300px;
+  resize: vertical;
+  font:
+    11px/1.5 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+.action-feedback {
+  display: grid;
+  gap: 7px;
+}
+.action-feedback p {
+  margin: 0;
+  font-size: 11px;
+}
+.error-message,
+.form-error {
+  color: var(--danger);
+}
+.one-time-secret {
+  padding: 11px;
+  border: 1px solid #2d5e99;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+  background: #061c36;
+  color: #a9d2ff;
+  user-select: all;
+}
+.stack-list,
+.version-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 16px;
+}
+.stack-list article,
+.version-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 16px;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #061629;
+  font-size: 11px;
+}
+.stack-list small,
+.version-list small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+}
+.stack-list form,
+.version-list form {
+  grid-column: 1 / -1;
+}
+.pill {
+  padding: 3px 7px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.pill-published {
+  border-color: #23714d;
+  color: var(--success);
+}
+.pill-draft {
+  border-color: #6c5720;
+  color: var(--warning);
+}
+.version-list article code {
+  grid-column: 1 / -1;
+  max-height: 190px;
+  padding: 10px;
+  overflow: auto;
+  white-space: pre-wrap;
+  background: #020d1d;
+  color: #a8b9cb;
+}
+.version-list article p {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 11px;
+}
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(
+    circle at 50% 0%,
+    #0c315d 0,
+    var(--background) 45%
+  );
+}
+.auth-card {
+  width: min(430px, 100%);
+  padding: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(4, 17, 35, 0.96);
+  box-shadow: 0 24px 70px #0009;
+}
+.auth-card.wide {
+  width: min(540px, 100%);
+}
+.auth-card h1 {
+  margin: 10px 0;
+  font-size: 30px;
+}
+.auth-card > p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+.eyebrow {
+  color: #4d9aff;
+  font:
+    11px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 0.12em;
+}
+.auth-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+}
+.auth-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.auth-form input {
+  min-height: 43px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #020d1d;
+  color: var(--text);
+}
+.install-snippet {
+  display: grid;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.install-snippet code {
+  padding: 10px;
+  background: #020d1d;
+  color: #8fc2ff;
 }
 .workspace {
   min-width: 0;
@@ -636,8 +951,20 @@ tbody tr.selected-row {
     min-width: 820px;
   }
   .lower-grid,
-  .trace-detail {
+  .trace-detail,
+  .management-grid,
+  .management-split {
     grid-template-columns: 1fr;
+  }
+  .management-content {
+    padding: 12px;
+  }
+  .management-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .management-toolbar input {
+    width: 100%;
   }
 }
 

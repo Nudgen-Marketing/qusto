@@ -12,6 +12,10 @@
       "types": "./src/public-runtime.ts",
       "import": "./dist/public-runtime.js"
     },
+    "./policy-admin": {
+      "types": "./src/policy-admin-repository.ts",
+      "import": "./dist/policy-admin-repository.js"
+    },
     "./registration": {
       "types": "./src/registration-repository.ts",
       "import": "./dist/registration-repository.js"
