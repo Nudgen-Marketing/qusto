@@ -10,6 +10,9 @@ export default defineConfig({
       "@qusto/control-plane": fileURLToPath(
         new URL("./packages/control-plane/src/index.ts", import.meta.url)
       ),
+      "@qusto/database": fileURLToPath(
+        new URL("./packages/database/src/index.ts", import.meta.url)
+      ),
       "@qusto/policy-engine": fileURLToPath(
         new URL("./packages/policy-engine/src/index.ts", import.meta.url)
       )
