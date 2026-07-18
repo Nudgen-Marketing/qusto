@@ -15,6 +15,7 @@ import type { PolicyRule } from "@qusto/policy-engine";
 describe("PostgreSQL repositories", () => {
   let database: TestDatabase;
   let environmentId: string;
+  let otherEnvironmentId: string;
   let policyVersionId: string;
 
   beforeAll(async () => {
@@ -37,6 +38,12 @@ describe("PostgreSQL repositories", () => {
     `;
     if (environment === undefined)
       throw new Error("Failed to create environment");
+    const [otherEnvironment] = await sql<{ id: string }[]>`
+      INSERT INTO environments (project_id, name, fail_mode)
+      VALUES (${project.id}, 'staging', 'closed') RETURNING id
+    `;
+    if (otherEnvironment === undefined)
+      throw new Error("Failed to create second environment");
     const [policyVersion] = await sql<{ id: string }[]>`
       INSERT INTO policy_versions (environment_id, version, status, rules)
       VALUES (${environment.id}, 1, 'published', '[]'::jsonb) RETURNING id
@@ -44,6 +51,7 @@ describe("PostgreSQL repositories", () => {
     if (policyVersion === undefined)
       throw new Error("Failed to create policy version");
     environmentId = environment.id;
+    otherEnvironmentId = otherEnvironment.id;
     policyVersionId = policyVersion.id;
     await sql.end();
   });
@@ -121,6 +129,78 @@ describe("PostgreSQL repositories", () => {
     await sql.end();
     await repository.close();
   });
+
+  it("rejects cross-environment trace ID collisions without mutating the owner", async () => {
+    const repository = new PostgresEventRepository(database.url);
+    const ownerEvent: TraceEvent = {
+      environmentId,
+      eventId: "event_trace_owner_000000000001",
+      occurredAt: "2026-07-18T05:00:00.000Z",
+      payload: { amountAtomic: "1000000", asset: "0xowner" },
+      traceId: "trace_cross_environment_00001",
+      type: "payment.required"
+    };
+    await ingestEvents([ownerEvent], repository);
+
+    const collidingEvent: TraceEvent = {
+      environmentId: otherEnvironmentId,
+      eventId: "event_trace_attacker_00000001",
+      occurredAt: "2026-07-18T05:01:00.000Z",
+      payload: { amountAtomic: "999999999", asset: "0xattacker" },
+      traceId: ownerEvent.traceId,
+      type: "settlement.succeeded"
+    };
+    await expect(ingestEvents([collidingEvent], repository)).rejects.toThrow(
+      "Trace ID belongs to another environment"
+    );
+
+    const sql = postgres(database.url, { max: 1 });
+    const [trace] = await sql<
+      { amount_atomic: string; environment_id: string; status: string }[]
+    >`
+      SELECT amount_atomic::text, environment_id, status
+      FROM traces WHERE id = ${ownerEvent.traceId}
+    `;
+    expect(trace).toEqual({
+      amount_atomic: "1000000",
+      environment_id: environmentId,
+      status: "in_progress"
+    });
+    const [attackerEvent] = await sql<{ count: number }[]>`
+      SELECT count(*)::integer AS count FROM trace_events
+      WHERE id = ${collidingEvent.eventId}
+    `;
+    expect(attackerEvent?.count).toBe(0);
+    await sql.end();
+    await repository.close();
+  });
+
+  it.each(["NaN", "9".repeat(79)])(
+    "rejects invalid atomic trace amounts before persistence: %s",
+    async (amountAtomic) => {
+      const repository = new PostgresEventRepository(database.url);
+      const event: TraceEvent = {
+        environmentId,
+        eventId: `event_invalid_amount_${amountAtomic.length}_${amountAtomic.slice(0, 3)}`,
+        occurredAt: "2026-07-18T05:05:00.000Z",
+        payload: { amountAtomic },
+        traceId: `trace_invalid_amount_${amountAtomic.length}`,
+        type: "payment.required"
+      };
+
+      await expect(ingestEvents([event], repository)).rejects.toThrow(
+        "Invalid atomic amount"
+      );
+
+      const sql = postgres(database.url, { max: 1 });
+      const [trace] = await sql<{ count: number }[]>`
+        SELECT count(*)::integer AS count FROM traces WHERE id = ${event.traceId}
+      `;
+      expect(trace?.count).toBe(0);
+      await sql.end();
+      await repository.close();
+    }
+  );
 
   it("enqueues webhook and reconciliation jobs once for qualifying events", async () => {
     const sql = postgres(database.url, { max: 1 });

@@ -73,6 +73,8 @@ describe("PostgresDashboardRepository overview charts", () => {
         (${productionId}, 2, 'archived', ${validRules}::jsonb),
         (${productionId}, 3, 'draft', ${validRules}::jsonb),
         (${productionId}, 4, 'published', '{"broken":true}'::jsonb),
+        (${productionId}, 5, 'published', to_jsonb(${validRules}::text)),
+        (${productionId}, 6, 'published', to_jsonb('not-json'::text)),
         (${stagingId}, 1, 'published', ${validRules}::jsonb)
     `;
 
@@ -177,8 +179,8 @@ describe("PostgresDashboardRepository overview charts", () => {
   });
 
   afterAll(async () => {
-    await repository?.close();
-    await database?.close();
+    await repository.close();
+    await database.close();
   });
 
   it("returns isolated Base-USDC spend buckets and real policy health", async () => {
@@ -186,9 +188,9 @@ describe("PostgresDashboardRepository overview charts", () => {
 
     expect(overview.metrics[0]?.value).toBe("8.5000 USDC");
     expect(overview.policyHealth).toEqual({
-      error: 1,
+      error: 3,
       healthy: 2,
-      total: 4,
+      total: 6,
       warning: 1
     });
     expect(overview.spendTrend["1H"]).toHaveLength(12);
