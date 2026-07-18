@@ -24,6 +24,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint src test",
+    "migrate": "node dist/cli.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

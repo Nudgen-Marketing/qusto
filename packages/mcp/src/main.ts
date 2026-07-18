@@ -22,14 +22,17 @@ async function main(): Promise<void> {
     baseUrl: config.baseUrl,
     environment: config.environment
   });
+  const walletInfo = createWalletInfo(config.privateKey, config.baseRpcUrl);
   const governedFetch = qusto.createGovernedFetch({
-    signer: createLocalX402Signer(config.privateKey),
+    signer: createLocalX402Signer(config.privateKey, async () =>
+      BigInt((await walletInfo()).balanceAtomic)
+    ),
     transport: safeFetch
   });
   const server = createQustoMcpServer({
     governedFetch,
     safeFetch,
-    walletInfo: createWalletInfo(config.privateKey, config.baseRpcUrl)
+    walletInfo
   });
   const transport = new StdioServerTransport();
   process.once("SIGINT", () => {

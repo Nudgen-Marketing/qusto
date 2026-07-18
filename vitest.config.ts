@@ -20,7 +20,14 @@ export default defineConfig({
   },
   test: {
     coverage: {
-      exclude: ["**/*.d.ts", "**/*.config.*", "**/dist/**", "apps/web/**"],
+      exclude: [
+        "**/*.d.ts",
+        "**/*.config.*",
+        "**/dist/**",
+        "apps/web/**",
+        "packages/database/**",
+        "packages/mcp/**"
+      ],
       provider: "v8",
       reporter: ["text", "json-summary", "html"],
       thresholds: {

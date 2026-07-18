@@ -57,6 +57,7 @@ export function AppFrame({
         <nav className="primary-nav">
           {navigation.map(({ href, icon: Icon, label }) => (
             <a
+              aria-label={label}
               className={label === active ? "active" : undefined}
               href={href}
               key={label}

@@ -1,4 +1,8 @@
 import { getPublicApi } from "../../../../../../../server/runtime";
+import {
+  reservationLimiter,
+  withRateLimit
+} from "../../../../../../../server/public-rate-limit";
 
 export const runtime = "nodejs";
 
@@ -11,5 +15,7 @@ export async function POST(
   context: RouteContext
 ): Promise<Response> {
   const { id } = await context.params;
-  return getPublicApi().completeReservation(request, id);
+  return withRateLimit(request, reservationLimiter, () =>
+    getPublicApi().completeReservation(request, id)
+  );
 }

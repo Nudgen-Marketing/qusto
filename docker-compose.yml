@@ -1,0 +1,70 @@
+name: qusto
+
+x-qusto-environment: &qusto-environment
+  DATABASE_URL: postgresql://qusto:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/qusto
+  BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET}
+  BETTER_AUTH_URL: ${QUSTO_PUBLIC_URL:-http://localhost:3000}
+  QUSTO_ENCRYPTION_KEY: ${QUSTO_ENCRYPTION_KEY:?Set QUSTO_ENCRYPTION_KEY}
+  BASE_RPC_URL: ${BASE_RPC_URL:?Set BASE_RPC_URL}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: qusto
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_USER: qusto
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qusto -d qusto"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - qusto-postgres:/var/lib/postgresql/data
+
+  migrate:
+    build:
+      context: .
+      target: migrate
+    environment: *qusto-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    build:
+      context: .
+      target: web
+    restart: unless-stopped
+    environment: *qusto-environment
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "${QUSTO_PORT:-3000}:3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/health/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  worker:
+    build:
+      context: .
+      target: worker
+    restart: unless-stopped
+    environment: *qusto-environment
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  qusto-postgres:

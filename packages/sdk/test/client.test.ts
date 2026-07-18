@@ -18,7 +18,13 @@ describe("createQusto", () => {
   it("evaluates before payment and batches lifecycle events", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
-        data: { decisionId: "dec-1", outcome: "allow", reasonCodes: [] },
+        data: {
+          decisionId: "dec-1",
+          outcome: "allow",
+          reasonCodes: [],
+          reservationExpiresAt: "2026-07-18T13:00:00.000Z",
+          reservationId: "reservation-1"
+        },
         ok: true
       })
     );
@@ -29,10 +35,13 @@ describe("createQusto", () => {
       fetch: fetchMock
     });
 
-    const result = await qusto.evaluate(payment);
-    await qusto.flush();
+    const result = await qusto.evaluate({ ...payment, tool: "market-data" });
+    await qusto.shutdown();
 
-    expect(result.outcome).toBe("allow");
+    expect(result).toMatchObject({
+      outcome: "allow",
+      reservationId: "reservation-1"
+    });
     expect(fetchMock.mock.calls[0]?.[0]).toBe(
       "https://qusto.example.com/api/public/v1/policy/evaluate"
     );

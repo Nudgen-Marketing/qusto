@@ -303,6 +303,7 @@ export function Dashboard({ data }: { readonly data: DashboardData }) {
         <nav className="primary-nav">
           {navigation.map(({ href, icon: Icon, label }, index) => (
             <a
+              aria-label={label}
               className={index === 0 ? "active" : undefined}
               href={href}
               key={label}

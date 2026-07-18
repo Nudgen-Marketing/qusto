@@ -32,7 +32,9 @@ describe("governed fetch", () => {
           status: 402
         })
       )
-      .mockResolvedValueOnce(new Response("paid", { status: 200 }));
+      .mockResolvedValueOnce(
+        new Response("settlement failed", { status: 500 })
+      );
     const controlPlane = vi.fn<typeof fetch>().mockResolvedValue(
       Response.json({
         data: { decisionId: "dec-1", outcome: "allow", reasonCodes: [] },
@@ -49,14 +51,17 @@ describe("governed fetch", () => {
       fetch: controlPlane
     });
 
-    const response = await qusto.createGovernedFetch({ signer, transport })(
-      "https://api.example.com/data"
-    );
+    const response = await qusto.createGovernedFetch({
+      signer,
+      tool: "compute",
+      transport
+    })("https://api.example.com/data", { body: "input", method: "POST" });
 
-    expect(await response.text()).toBe("paid");
+    expect(await response.text()).toBe("settlement failed");
     expect(signer.createPaymentPayload).toHaveBeenCalledOnce();
     const retryHeaders = new Headers(transport.mock.calls[1]?.[1]?.headers);
     expect(retryHeaders.get("payment-signature")).toBe("signed-payload");
+    expect(transport.mock.calls[0]?.[1]?.body).toBeInstanceOf(ArrayBuffer);
   });
 
   it("never invokes the signer when policy denies", async () => {

@@ -5,7 +5,10 @@ import { ExactEvmSchemeV1 } from "@x402/evm/exact/v1/client";
 import { privateKeyToAccount } from "viem/accounts";
 import type { X402Signer } from "@qusto/sdk";
 
-export function createLocalX402Signer(privateKey: string): X402Signer {
+export function createLocalX402Signer(
+  privateKey: string,
+  balanceAtomic?: () => Promise<bigint>
+): X402Signer {
   if (!/^0x[a-fA-F0-9]{64}$/.test(privateKey)) {
     throw new Error("X402_PRIVATE_KEY must be a 32-byte 0x-prefixed hex value");
   }
@@ -16,6 +19,12 @@ export function createLocalX402Signer(privateKey: string): X402Signer {
   return {
     address: account.address,
     async createPaymentPayload({ protocolVersion, requirement, resourceUrl }) {
+      if (
+        balanceAtomic !== undefined &&
+        (await balanceAtomic()) < BigInt(requirement.amountAtomic)
+      ) {
+        throw new Error("Insufficient Base USDC balance for x402 payment");
+      }
       if (protocolVersion === 1) {
         const legacyRequirement = {
           asset: requirement.asset,
